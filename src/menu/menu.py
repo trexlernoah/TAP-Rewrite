@@ -173,7 +173,7 @@ def profile_parameters(trial_num):
     # Initialize array of trial elements for later
     ref = []
     for i in range(trial_num):
-        trial = tk.Label(profile_parameters, text="Trial "+str(i))
+        trial = tk.Label(profile_parameters, text="Trial "+str(i+1))
         trial.grid(row=i, column=0)
 
         shock_duration_label = tk.Label(profile_parameters, text="Shock Duration: ")
