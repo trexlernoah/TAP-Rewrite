@@ -1,0 +1,16 @@
+Notes
+=====
+- TAP = Taylor Aggression Paradigm
+- Note about electrical safety:
+	- ensure proper physical safeguards
+	- code is not always perfect
+	- make sure shocks are not capable of exceeding threshold
+
+Structure
+=========
+MENU
+DAQ INTERFACE
+SHOCK SELECTION
+REACTION TEST
+
+
