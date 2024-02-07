@@ -105,7 +105,7 @@ class ShockState():
                     pygame.quit()
                     quit()
 
-                elif event.type == pygame.KEYDOWN or not timer_started:
+                elif not timer_started:
                     text = font.render("Press and hold down the space key", True, black)
                     text_rect = text.get_rect(center = (center_x, center_y))
                     display.blit(text, text_rect)
