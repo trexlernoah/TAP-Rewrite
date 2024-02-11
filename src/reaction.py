@@ -8,8 +8,6 @@ pygame.display.set_caption("Reaction Time Test")
 
 font = pygame.font.SysFont(None, 30)
 
-# text_block = font.render("PRESS ANY KEY TO START TEST", 0, (255,255,255))
-
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -62,7 +60,6 @@ def hold_loop():
     timer_release = timer_start + random.randint(2000, 4000)
 
     while True:
-
         current_time = pygame.time.get_ticks()
 
         if current_time >= timer_release:
