@@ -1,7 +1,6 @@
-# Swiped from https://stackoverflow.com/a/66033644
 from enum import Enum
-import pygame
-import random
+import pygame, random
+
 pygame.init()
 
 display = pygame.display.set_mode((640, 480))
@@ -9,7 +8,14 @@ pygame.display.set_caption("Reaction Time Test")
 
 font = pygame.font.SysFont(None, 30)
 
-text = font.render("PRESS ANY KEY TO START TEST", 0, (255,255,255))
+# text_block = font.render("PRESS ANY KEY TO START TEST", 0, (255,255,255))
+
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+
+BG = WHITE
+FG = BLACK
 
 class game_state(Enum):
     START = 1
@@ -17,102 +23,63 @@ class game_state(Enum):
     HOLD = 3
     SHOCK = 4
 
-def start_loop():
+def render(text, color, delay = 0):
+    display.fill(BG)
+    text_block = font.render(text, 1, color)
+    display.blit(text_block, text_block.get_rect(center = display.get_rect().center))
+    pygame.display.flip()
+    pygame.time.wait(delay)
 
-    display.blit(font.render("PRESS SPACEBAR TO START TEST", 0, (255,255,255)),
-                        text.get_rect(center = display.get_rect().center))
-    running = True
-    while running:
+def start_loop():
+    render("PRESS SPACEBAR TO START TEST", FG)
+
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                print("spacebar press")
-                display.fill(pygame.Color("black"))
-                pygame.display.flip()
-                print("waiting")
-                # pygame.time.wait(7650)
-                print("done waiting")
-                running = False
-                break
-        pygame.display.flip()
+                render("", FG, 7650)
+                return True
 
 def ready_loop():
+    render("GET READY!", FG, 3700)
+    render("PRESS SPACEBAR", FG)
 
-    display.blit(font.render("GET READY!", 0, (255,255,255)),
-                         text.get_rect(center = display.get_rect().center))
-    pygame.display.flip()
-    pygame.time.wait(3700)
-    display.fill(pygame.Color("black"))
-    display.blit(font.render("PRESS SPACEBAR", 0, (255,255,255)),
-                         text.get_rect(center = display.get_rect().center))
-    pygame.display.flip()
     timer_start = pygame.time.get_ticks()
-    print(timer_start)
-    running = True
-    while running:
+
+    while True:
         current_time = pygame.time.get_ticks()
-        time_elapsed = current_time - timer_start
-        if time_elapsed >= 3700:
-                display.fill(pygame.Color("black"))
-                display.blit(font.render("PLEASE PRESS THE SPACEBAR", 0, (255,255,255)),
-                             text.get_rect(center = display.get_rect().center))
+        delta_time = current_time - timer_start
+
+        if delta_time >= 3700:
+                render("PLEASE PRESS THE SPACEBAR", FG)
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                print('starting')
-                running = False
-                break
-        pygame.display.flip()
+                return True
 
 def hold_loop():
-    display.fill(pygame.Color("black"))
-    display.blit(font.render("PRESS SPACEBAR", 0, (255,255,255)),
-                         text.get_rect(center = display.get_rect().center))
-    pygame.display.flip()
+    render("PRESS SPACEBAR", FG)
 
     timer_start = pygame.time.get_ticks()
     timer_release = timer_start + random.randint(2000, 4000)
-    running = True
-    while running:
+
+    while True:
+
         current_time = pygame.time.get_ticks()
+
         if current_time >= timer_release:
-            display.fill(pygame.Color("black"))
-            display.blit(font.render("RELEASE", 0, (255,0,0)),
-                         text.get_rect(center = display.get_rect().center))
+            render("RELEASE", RED)
 
         for event in pygame.event.get():
             if event.type == pygame.TEXTINPUT and event.text == ' ':
-                print('holding')
                 if current_time > timer_release + 5000:
-                    display.fill(pygame.Color("black"))
-                    display.blit(font.render("YOU WAITED TOO LONG", 0, (255,255,255)),
-                                 text.get_rect(center = display.get_rect().center))
-                    pygame.display.flip()
-                    pygame.time.wait(3700)
-                    # return go to get ready
-                    running = False
-                    break
+                    render("YOU WAITED TOO LONG", FG, 3700)
+                    return False
             elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
-                print('released')
                 if current_time < timer_release:
-                    display.fill(pygame.Color("black"))
-                    display.blit(font.render("YOU RELEASED TOO SOON", 0, (255,255,255)),
-                                 text.get_rect(center = display.get_rect().center))
-                    pygame.display.flip()
-                    pygame.time.wait(3700)
-                    # return go to get ready
-                    running = False
-                    break
+                    render("YOU RELEASED TOO SOON", FG, 3700)
+                    return False
                 else:
-                    display.fill(pygame.Color("black"))
-                    display.blit(font.render("YOU WIN, YOU GET TO GIVE A SHOCK", 0, (255,255,255)),
-                                 text.get_rect(center = display.get_rect().center))
-                    pygame.display.flip()
-                    pygame.time.wait(3700)
-                    # return go to get ready
-                    running = False
-                    break
-            else:
-                print(event)
-                print(current_time)
+                    render("YOU WIN, YOU GET TO GIVE A SHOCK", FG, 3700)
+                    return True
         pygame.display.flip()
 
 
@@ -121,19 +88,16 @@ def run():
 
     while True:
         if current_state == game_state.START:
-            start_loop()
-            current_state = game_state.READY
+            current_state = game_state.READY if start_loop() else game_state.START
         elif current_state == game_state.READY:
-            ready_loop()
-            current_state = game_state.HOLD
+            current_state = game_state.HOLD if ready_loop() else game_state.READY
         elif current_state == game_state.HOLD:
-            hold_loop()
+            current_state = game_state.SHOCK if hold_loop() else game_state.READY
+        elif current_state == game_state.SHOCK:
+            break
+        else:
             break
 
-        
-        display.fill(pygame.Color("black"))
         pygame.display.flip()
-
-    # elif current_state == game_state.READY:
 
 run()
