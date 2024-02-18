@@ -1,7 +1,5 @@
-import pygame
-import math
-import sys
-import time
+import pygame, math, sys, time
+from pygame import gfxdraw
 
 pygame.init()
 size = width, height = 1000, 800
@@ -30,18 +28,18 @@ def clockwiseArc(point, radius, startAngle, endAngle):
     return rect, startRad, endRad
 
 def drawCircles():
-    display.fill(GRAY)
+    display.fill(WHITE)
 
     for i in range(1, 11):
         # Draw circles
         offset = -275 + i * 50
-        x = center_x + offset
-        y = (center_y - 60) + (center_y / 2)
-        pygame.draw.circle(display, WHITE, (x, y), RADIUS, 39)
+        x = int(center_x + offset)
+        y = int((center_y - 60) + (center_y / 2))
+        # gfxdraw.aacircle(display, x, y, RADIUS, BLACK)
+        pygame.draw.circle(display, BLACK, (x, y), RADIUS, 3)
         
         # Draw text
         offset = -280 + i * 50
-        print(offset)
         x = center_x + offset
         y = (center_y - 30) + (center_y / 2)
         text = font.render(str(i), 1, BLACK)
@@ -56,19 +54,34 @@ def drawCircles():
     # Initialize arc
     pygame.draw.circle(display, BLACK, (center_x, center_y - 250), 100, width=5, draw_top_left=True, draw_top_right=True)
 
+def arcDraw(x, y, r, n):
+    for i in range (0, n):
+        x2 = math.cos(math.radians())
+        gfxdraw.filled_trigon(display, x, y,)
+
 def key_press(_key):
     key = _key - 48
     print("Key %d has been pressed" % key)
     if key == 0:
         key = 10
     offset = -275 + key * 50
-    pygame.draw.circle(display, RED, (center_x + offset, (center_y - 60) + (center_y / 2)), RADIUS, 39)
+    x = int(center_x + offset)
+    y = int((center_y - 60) + (center_y / 2))
+    pygame.draw.circle(display, RED, (x, y), RADIUS, 39)
+    # gfxdraw.filled_circle(display, x, y, RADIUS, RED)
     rect, startRad, endRad = clockwiseArc((center_x, center_y - 250), 95, 180, (180+(180/10 * key)))
     pygame.draw.arc(display, RED, rect, startRad, endRad, 95)
+    # for i in range(0, 96):
+        # gfxdraw.arc(display, center_x, center_y - 250, i, 180, 270, RED)
+    # x = center_x
+    # y = center_y - 250
+    # n = math.sin(math.radians(18)) * 90
+    # gfxdraw.filled_trigon(display, x, y, x-90, y, x-90, y-int(n), RED)
     pygame.display.update()
     time.sleep(1)
     pygame.draw.circle(display, WHITE, (center_x + offset, (center_y - 60) + (center_y / 2)), RADIUS, 39)
-    pygame.draw.arc(display, GRAY, rect, startRad, endRad, 95)
+    pygame.draw.arc(display, WHITE, rect, startRad, endRad, 95)
+    drawCircles()
     pygame.display.update()
 
 running = True
