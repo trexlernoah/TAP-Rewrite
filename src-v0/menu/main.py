@@ -2,7 +2,7 @@
 from shock import *
 
 # Menu program functions
-from menu import *
+from .menu import *
 
 print("Successfully imported all functions")
 

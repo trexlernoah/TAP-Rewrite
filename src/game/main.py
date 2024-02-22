@@ -3,10 +3,10 @@ TODO
 -refactor reaction.py to accept a shared surface on global display 
 '''
 
-import pygame, sys
+import pygame
 
-from reaction import reaction_test_mngr
-from speedometer import shock_meter_mngr
+from game.reaction import reaction_test_mngr
+from game.speedometer import shock_meter_mngr
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
