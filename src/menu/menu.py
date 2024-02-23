@@ -1,7 +1,7 @@
 import threading
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk, messagebox, filedialog, simpledialog
+from tkinter import ttk, messagebox, simpledialog
 
 # Import shock function
 # from shock import *
@@ -14,7 +14,7 @@ from backend import *
 
 class main_menu():
     '''Tkinter menu class'''
-    def __init__(self):
+    def __init__(self) -> None:
         window = tk.Tk()
         window.title("TAP Python Edition")
         window.geometry("500x500")

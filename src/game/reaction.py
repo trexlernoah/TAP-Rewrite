@@ -80,7 +80,6 @@ class reaction_test_mngr():
                         self.render("YOU RELEASED TOO SOON", FG, 3700)
                         return False
                     else:
-                        self.render("YOU WIN, YOU GET TO GIVE A SHOCK", FG, 3700)
                         return True
             pygame.display.flip()
 

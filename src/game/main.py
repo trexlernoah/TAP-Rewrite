@@ -21,10 +21,10 @@ subsurf = display.subsurface((400, 500), (800, 300))
 
 def main():
     react_mngr = reaction_test_mngr(subsurf)
-    shock_mngr = shock_meter_mngr(display)
+    shock_mngr = shock_meter_mngr(display, subsurf)
 
     while True:
-        shock_mngr.drawCircles()
+        shock_mngr.draw_circles()
         if not react_mngr.run():
             break
         if not shock_mngr.shock():

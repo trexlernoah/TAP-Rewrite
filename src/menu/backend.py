@@ -1,7 +1,18 @@
+# this file should be file i/o
+import pandas as pd
+
+def test():
+    try:
+        df = pd.read_csv('./src/data/eg.dat', delimiter='\t')
+        print(df)
+    except FileNotFoundError:
+        print(f"File 'eg.dat' not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# tkinter should remain in ui files
 from tkinter import *
-from tkinter import ttk, messagebox, filedialog
-import re
-import tkinter as tk
+from tkinter import filedialog
 # As the name implies, handles everything in the backend - shock timing, saving to and reading from files, etc.
 
 # Testing function for buttons - to be removed
@@ -97,3 +108,4 @@ def open_experiment():
 # update_variable("subject_low_threshold", 1.00, "experiment")
 # update_variable("subject_high_threshold", 2.00, "experiment")
 # update_variable("corresponding_interval_0", 2.054, "experiment")
+test()
