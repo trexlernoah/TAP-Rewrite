@@ -3,7 +3,7 @@ import pandas as pd
 
 def test():
     try:
-        df = pd.read_csv('./src/data/eg.dat', delimiter='\t')
+        df = pd.read_csv('./src/data/eg.dat', delimiter=' ')
         print(df)
     except FileNotFoundError:
         print(f"File 'eg.dat' not found.")
@@ -64,10 +64,7 @@ def read_variable(name, filename=None):
     return result
 
 # Initialize a new experiment template - autofill options with defaults, etc.
-def init_experiment(filename=None):
-    if filename is None:
-        filename="default"
-    
+def init_experiment(filename="default"):    
     # Values to initialize a new experiment file
     # Set experiment ID as the name of the filename by default
     default_filename = "subject_id=experiment\n"

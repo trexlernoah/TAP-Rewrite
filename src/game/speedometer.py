@@ -89,7 +89,7 @@ class shock_meter_mngr():
         self.draw_circles()
         pygame.display.update()
 
-    def render(self, text, color, delay = 0):
+    def render(self, text, color=FG, delay = 0):
         self.display.fill(BG)
         text_block = font.render(text, 1, color)
         self.display.blit(text_block, text_block.get_rect(center = self.display.get_rect().center))
@@ -97,7 +97,7 @@ class shock_meter_mngr():
         pygame.time.wait(delay)
 
     def shock_loop(self):
-        self.render("YOU WON!\nYOU GET TO GIVE A SHOCK", FG)
+        self.render("YOU WON!\nYOU GET TO GIVE A SHOCK")
 
         timer_start = pygame.time.get_ticks()
         time_held = 0
@@ -106,21 +106,19 @@ class shock_meter_mngr():
             current_time = pygame.time.get_ticks()
 
             if current_time >= timer_start + 2000:
-                self.render("YOU MUST PRESS A SHOCK BUTTON", BLACK)
+                self.render("YOU MUST PRESS A SHOCK BUTTON")
 
             for event in pygame.event.get():
                 if event.type == pygame.TEXTINPUT and event.text == ' ':
-                    # if 
-                    if current_time > timer_release + 5000:
-                        self.render("YOU WAITED TOO LONG", FG, 3700)
-                        return False
+                    if time_held == 0:
+                        time_held = current_time
+                    if current_time > timer_start + 7000:
+                        self.render("YOU ARE DONE SHOCKING! PLEASE RELEASE SHOCK BUTTON")
                 elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
-                    if current_time < timer_start:
-                        self.render("YOU ARE DONE SHOCKING!", FG, 2000)
-                        return False
-                    else:
-                        self.render("YOU WIN, YOU GET TO GIVE A SHOCK", FG, 3700)
-                        return True
+                    if current_time > timer_start:
+                        time_held = current_time - time_held
+                        self.render("YOU ARE DONE SHOCKING!", delay=2000)
+                        return time_held
             pygame.display.flip()
 
     def shock(self):
