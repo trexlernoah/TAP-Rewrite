@@ -22,7 +22,7 @@ screen_h = info.current_h
 display = pygame.display.set_mode((screen_w, screen_h))
 display.fill(WHITE)
 
-subsurf_w = 400
+subsurf_w = screen_w - 200
 subsurf_h = 200
 subsurf_x = (info.current_w / 2) - (subsurf_w / 2)
 subsurf_y = (info.current_h / 2) - (subsurf_h / 2)
@@ -36,7 +36,7 @@ def main():
         shock_mngr.draw_circles()
         if not react_mngr.run():
             break
-        if not shock_mngr.shock():
+        if not shock_mngr.shock_loop():
             break
 
 if __name__ == "__main__":

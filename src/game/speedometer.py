@@ -69,66 +69,85 @@ class shock_meter_mngr():
             x2 = math.cos(math.radians())
             gfxdraw.filled_trigon(self.display, x, y,)
 
-    def key_press(self, _key):
+    def draw_meter(self, _key):
         key = _key - 48
-        print("Key %d has been pressed" % key)
         if key == 0:
             key = 10
+            
         offset = -275 + key * 50
+        
         x = int(self.center_x + offset)
         y = int((self.center_y - 60) + (self.center_y / 2))
         pygame.draw.circle(self.display, RED, (x, y), RADIUS, 39)
         # gfxdraw.filled_circle(self.display, x, y, RADIUS, RED)
         rect, startRad, endRad = self.clockwise_arc((self.center_x, self.center_y - 250), 95, 180, (180+(180/10 * key)))
         pygame.draw.arc(self.display, RED, rect, startRad, endRad, 95)
+        pygame.display.flip()
+        
 
-        pygame.display.update()
-        time.sleep(1)
+    def erase_meter(self, _key):
+        key = _key - 48
+        if key == 0:
+            key = 10
+            
+        offset = -275 + key * 50
+        rect, startRad, endRad = self.clockwise_arc((self.center_x, self.center_y - 250), 95, 180, (180+(180/10 * key)))
         pygame.draw.circle(self.display, WHITE, (self.center_x + offset, (self.center_y - 60) + (self.center_y / 2)), RADIUS, 39)
         pygame.draw.arc(self.display, WHITE, rect, startRad, endRad, 95)
         self.draw_circles()
-        pygame.display.update()
+        pygame.display.flip()
 
-    def render(self, text, color=FG, delay = 0):
-        self.display.fill(BG)
+    def render(self, text, surface: pygame.Surface, color=FG, delay = 0):
+        surface.fill(BG)
         text_block = font.render(text, 1, color)
-        self.display.blit(text_block, text_block.get_rect(center = self.display.get_rect().center))
+        surface.blit(text_block, text_block.get_rect(center = surface.get_rect().center))
         pygame.display.flip()
         pygame.time.wait(delay)
 
     def shock_loop(self):
-        self.render("YOU WON!\nYOU GET TO GIVE A SHOCK")
+        self.render("YOU WON! YOU GET TO GIVE A SHOCK", self.subsurf)
 
         timer_start = pygame.time.get_ticks()
         time_held = 0
+        key_pressed = None
 
         while True:
             current_time = pygame.time.get_ticks()
 
-            if current_time >= timer_start + 2000:
-                self.render("YOU MUST PRESS A SHOCK BUTTON")
+            if current_time >= timer_start + 4000 and time_held == 0:
+                self.render("YOU MUST PRESS A SHOCK BUTTON", self.subsurf)
 
             for event in pygame.event.get():
-                if event.type == pygame.TEXTINPUT and event.text == ' ':
+                if event.type == pygame.KEYDOWN and event.key in range(48, 58) and not key_pressed: # start
+                    key_pressed = event.unicode
                     if time_held == 0:
+                        self.render("", self.subsurf)
+                        self.draw_meter(event.key)
                         time_held = current_time
-                    if current_time > timer_start + 7000:
-                        self.render("YOU ARE DONE SHOCKING! PLEASE RELEASE SHOCK BUTTON")
-                elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+                elif event.type == pygame.TEXTINPUT and event.text == key_pressed: # hold
+                    if current_time > time_held + 7000:
+                        self.render("YOU ARE DONE SHOCKING! PLEASE RELEASE SHOCK BUTTON", self.subsurf)
+                elif event.type == pygame.KEYUP and event.unicode == key_pressed: # end
+                    print(key_pressed, event.unicode)
                     if current_time > timer_start:
                         time_held = current_time - time_held
-                        self.render("YOU ARE DONE SHOCKING!", delay=2000)
+                        self.erase_meter(event.key)
+                        self.render("YOU ARE DONE SHOCKING!", self.subsurf, delay=5000)
                         return time_held
             pygame.display.flip()
 
     def shock(self):
         while True:
             for event in pygame.event.get():
-                if event.key not in range(48, 58):
-                    print("Please press a key from 0-9 on the keyboard")
-                else:
-                    self.key_press(event.key)
-                    return True
+                if event.type == pygame.KEYDOWN:
+                    # if event.key == pygame.K_ESCAPE:
+                    #     pygame.quit()
+                    #     sys.exit()
+                    if event.key not in range(48, 58):
+                        print("Please press a key from 0-9 on the keyboard")
+                    else:
+                        self.key_press(event.key)
+                        return True
 
 # running = True
 # draw_circles()
