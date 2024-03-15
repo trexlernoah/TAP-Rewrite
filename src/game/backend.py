@@ -1,6 +1,6 @@
 # this file should be file i/o
 import pandas as pd
-from game import main
+import main
 
 def test():
     try:
@@ -96,6 +96,10 @@ def open_experiment():
     print(filename)
     return filename
 
+def save_data(data: pd.DataFrame, filename: str):
+    if not filename: return
+    data.to_csv(filename, sep=' ', encoding='utf-8', index=False)
+
 # Fix
 # Fill with variables later
 # def data_sheet():
@@ -107,5 +111,7 @@ def open_experiment():
 # update_variable("subject_high_threshold", 2.00, "experiment")
 # update_variable("corresponding_interval_0", 2.054, "experiment")
 def run_official():
-    data = main.main(2)
+    data = main.main(1)
     print(data)
+    data.columns = ['Trial', 'W/L', 'Shock', 'Duration', 'ReactionTime']
+    save_data(data, './src/data/test.dat')
