@@ -23,8 +23,9 @@ class game_state(Enum):
 
 class reaction_test_mngr():
     '''Reaction test drawing'''
-    def __init__(self, display: pygame.Surface):
+    def __init__(self, display: pygame.Surface, dr: list):
         self.display = display
+        self.dr = dr
 
     def render(self, text, color, delay = 0):
         self.display.fill(BG)
@@ -39,11 +40,11 @@ class reaction_test_mngr():
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    self.render("", FG, 7650)
+                    # self.render("", FG, 7650)
                     return True
 
     def ready_loop(self):
-        self.render("GET READY!", FG, 3700)
+        # self.render("GET READY!", FG, 3700)
         self.render("PRESS SPACEBAR", FG)
 
         timer_start = pygame.time.get_ticks()
@@ -80,6 +81,9 @@ class reaction_test_mngr():
                         self.render("YOU RELEASED TOO SOON", FG, 3700)
                         return False
                     else:
+                        reaction_time = current_time - timer_release
+                        print("ReactionTime: %d ms" % (reaction_time))
+                        self.dr.append(reaction_time)
                         return True
             pygame.display.flip()
 

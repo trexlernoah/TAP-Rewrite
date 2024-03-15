@@ -25,7 +25,7 @@ class main_menu():
     def show_about_info(self):
         messagebox.showinfo(
             title="About",
-            message="This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module. Text to be added."
+            message="This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module."
         )
 
     def set_options(self):
@@ -163,7 +163,7 @@ class main_menu():
         if number_of_trials != None:
             for i in range(number_of_trials):
                 append_variable("trial-"+str(i), number_of_trials, "experiment")
-            self.profile_parameters(trial_num=number_of_trials)
+            # self.profile_parameters(trial_num=number_of_trials)
         else:
             number_of_trials=0
 
@@ -260,7 +260,7 @@ class main_menu():
         # Run dropdown menu options
         experiment_menu.add_cascade(label="Run", menu=run_menu)
         run_menu.add_command(label="Practice", command=example)
-        run_menu.add_command(label="Official", command=example)
+        run_menu.add_command(label="Official", command=run_official)
         experiment_menu.add_separator()
 
         # Exit dropdown menu option

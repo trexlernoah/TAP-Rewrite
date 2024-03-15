@@ -1,9 +1,10 @@
 # this file should be file i/o
 import pandas as pd
+from game import main
 
 def test():
     try:
-        df = pd.read_csv('./src/data/eg.dat', delimiter=' ')
+        df = pd.read_csv('./src/data/eg.dat', delimiter=' ', skiprows=4)
         print(df)
     except FileNotFoundError:
         print(f"File 'eg.dat' not found.")
@@ -105,4 +106,6 @@ def open_experiment():
 # update_variable("subject_low_threshold", 1.00, "experiment")
 # update_variable("subject_high_threshold", 2.00, "experiment")
 # update_variable("corresponding_interval_0", 2.054, "experiment")
-test()
+def run_official():
+    data = main.main(2)
+    print(data)

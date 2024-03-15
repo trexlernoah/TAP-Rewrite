@@ -1,4 +1,4 @@
-import pygame, math, sys, time
+import pygame, math
 from pygame import gfxdraw
 
 pygame.init()
@@ -19,13 +19,15 @@ FG = BLACK
 
 class shock_meter_mngr():
     '''Shock meter drawing'''
-    def __init__(self, display: pygame.Surface, subsurf: pygame.Surface):
+    def __init__(self, display: pygame.Surface, subsurf: pygame.Surface, dr: list):
         self.display = display
         self.subsurf = subsurf
 
         window = display.get_rect()
         self.center_x = window.centerx
         self.center_y = window.centery
+
+        self.dr = dr
     
 
     def clockwise_arc(self, point, radius, startAngle, endAngle):
@@ -120,6 +122,8 @@ class shock_meter_mngr():
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key in range(48, 58) and not key_pressed: # start
                     key_pressed = event.unicode
+                    print("Shock: %s" % ("10" if key_pressed == "0" else key_pressed))
+                    self.dr.append(("10" if key_pressed == "0" else key_pressed))
                     if time_held == 0:
                         self.render("", self.subsurf)
                         self.draw_meter(event.key)
@@ -128,10 +132,11 @@ class shock_meter_mngr():
                     if current_time > time_held + 7000:
                         self.render("YOU ARE DONE SHOCKING! PLEASE RELEASE SHOCK BUTTON", self.subsurf)
                 elif event.type == pygame.KEYUP and event.unicode == key_pressed: # end
-                    print(key_pressed, event.unicode)
                     if current_time > timer_start:
                         time_held = current_time - time_held
                         self.erase_meter(event.key)
+                        print("Duration: %d ms" % (time_held))
+                        self.dr.append(time_held)
                         self.render("YOU ARE DONE SHOCKING!", self.subsurf, delay=5000)
                         return time_held
             pygame.display.flip()
