@@ -111,7 +111,7 @@ def save_data(data: pd.DataFrame, filename: str):
 # update_variable("subject_high_threshold", 2.00, "experiment")
 # update_variable("corresponding_interval_0", 2.054, "experiment")
 def run_official():
-    data = main.main(1)
+    data = main.main(4)
     print(data)
     data.columns = ['Trial', 'W/L', 'Shock', 'Duration', 'ReactionTime']
     save_data(data, './src/data/test.dat')

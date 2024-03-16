@@ -1,4 +1,4 @@
-import pygame, math
+import pygame, math, random
 from pygame import gfxdraw
 
 pygame.init()
@@ -28,7 +28,6 @@ class shock_meter_mngr():
         self.center_y = window.centery
 
         self.dr = dr
-    
 
     def clockwise_arc(self, point, radius, startAngle, endAngle):
         rect = pygame.Rect(0, 0, radius*2, radius*2)
@@ -86,13 +85,12 @@ class shock_meter_mngr():
         pygame.draw.arc(self.display, RED, rect, startRad, endRad, 95)
         pygame.display.flip()
         
-
     def erase_meter(self, _key):
         key = _key - 48
         if key == 0:
             key = 10
             
-        offset = -275 + key * 50
+        offset = 275
         rect, startRad, endRad = self.clockwise_arc((self.center_x, self.center_y - 250), 95, 180, (180+(180/10 * key)))
         pygame.draw.circle(self.display, WHITE, (self.center_x + offset, (self.center_y - 60) + (self.center_y / 2)), RADIUS, 39)
         pygame.draw.arc(self.display, WHITE, rect, startRad, endRad, 95)
@@ -105,6 +103,21 @@ class shock_meter_mngr():
         surface.blit(text_block, text_block.get_rect(center = surface.get_rect().center))
         pygame.display.flip()
         pygame.time.wait(delay)
+
+    # Bad
+    def loser_loop(self):
+        self.render("YOU LOST! YOU GET A SHOCK", self.subsurf, delay=2400)
+        # wat happens here
+        key = random.randint(48,57)
+        self.draw_meter(key)
+        pygame.display.flip()
+        self.render("", self.subsurf, delay=1000)
+        pygame.display.flip()
+        self.erase_meter(key)
+        pygame.display.flip()
+        self.dr.append('---')
+        self.dr.append('-----')
+        return True
 
     def shock_loop(self):
         self.render("YOU WON! YOU GET TO GIVE A SHOCK", self.subsurf)
@@ -138,34 +151,5 @@ class shock_meter_mngr():
                         print("Duration: %d ms" % (time_held))
                         self.dr.append(time_held)
                         self.render("YOU ARE DONE SHOCKING!", self.subsurf, delay=5000)
-                        return time_held
-            pygame.display.flip()
-
-    def shock(self):
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    # if event.key == pygame.K_ESCAPE:
-                    #     pygame.quit()
-                    #     sys.exit()
-                    if event.key not in range(48, 58):
-                        print("Please press a key from 0-9 on the keyboard")
-                    else:
-                        self.key_press(event.key)
                         return True
-
-# running = True
-# draw_circles()
-# while running:
-#     for event in pygame.event.get():
-#         if event.type == pygame.KEYDOWN:
-#             if event.key == pygame.K_ESCAPE:
-#                 pygame.quit()
-#                 sys.exit()
-#             elif event.key not in range(48, 58):
-#                 print("Please press a key from 0-9 on the keyboard")
-#             else:
-#                 key_press(event.key)
-#                 # running = False
-#     pygame.display.update() 
-#     pygame.display.flip()
+            pygame.display.flip()

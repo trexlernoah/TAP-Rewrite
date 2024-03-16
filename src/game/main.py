@@ -3,7 +3,7 @@ TODO
 -refactor reaction.py to accept a shared surface on global display 
 '''
 
-import pygame
+import pygame, random
 import pandas as pd
 import numpy as np
 
@@ -38,11 +38,16 @@ def main(trials: int):
     trial = 1
     while trial <= trials:
         data.append(trial)
-        data.append('W') # TODO hard coded W/L change this
         shock_mngr.draw_circles()
         if not react_mngr.run():
             break
-        if not shock_mngr.shock_loop():
+        
+        # Change this
+        wl = random.choice([True, False])
+        data.append(('W' if wl else 'L'))
+        shock_fn = shock_mngr.shock_loop if wl else shock_mngr.loser_loop
+
+        if not shock_fn():
             break
         trial += 1
 
@@ -60,4 +65,4 @@ def main(trials: int):
     return df
 
 if __name__ == "__main__":
-    main(1)
+    main()

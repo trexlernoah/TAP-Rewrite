@@ -53,6 +53,7 @@ class main_menu():
         subject_id_entry.grid(row=1, column=2)
         id_num = subject_id_entry.get()
         update_variable("experiment_id", str(id_num), "experiment")
+        # update_variable("experiment_id", '001', "experiment")
 
         set_lower_level = tk.Label(subject_threshold, text="Set Lower Level")
         set_lower_level.grid(row=2, column=1)
