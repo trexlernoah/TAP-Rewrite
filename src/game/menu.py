@@ -23,6 +23,15 @@ class main_menu():
         self.window = window
         self.state = {'trials': 0}
     
+    def run_experiment(self):
+        if self.state['trials'] <= 0:
+            messagebox.showinfo(
+                title="Warning",
+                message="You must set the number of trials!"
+            )
+            return
+        run_official(self.state['trials'])
+
     def show_about_info(self):
         messagebox.showinfo(
             title="About",
@@ -228,6 +237,7 @@ class main_menu():
         # Add menu options in menu bar
         # Names should be fairly self explanitory
         experiment_menu = tk.Menu(menubar, tearoff=0)
+        open_experiment_menu = tk.Menu(menubar, tearoff=0)
         create_new_menu = tk.Menu(menubar, tearoff=0)
         edit_current_menu = tk.Menu(experiment_menu, tearoff=0)
         run_menu = tk.Menu(experiment_menu, tearoff=0)
@@ -242,7 +252,10 @@ class main_menu():
 
         # Experiment dropdown menu options
         experiment_menu.add_cascade(label="Create New", menu=create_new_menu)
-        experiment_menu.add_cascade(label="Open Experiment", command=open_experiment)
+        experiment_menu.add_cascade(label="Open Experiment", menu=open_experiment_menu)
+
+        # Open experiment
+        open_experiment_menu.add_command(label="Open Experiment", command=open_experiment)
 
         # "Create New" dropdown menu options
         create_new_menu.add_command(label="Instruction", command=example)
@@ -262,7 +275,7 @@ class main_menu():
         # Run dropdown menu options
         experiment_menu.add_cascade(label="Run", menu=run_menu)
         run_menu.add_command(label="Practice", command=example)
-        run_menu.add_command(label="Official", command=lambda:[run_official(self.state['trials'])])
+        run_menu.add_command(label="Official", command=self.run_experiment)
         experiment_menu.add_separator()
 
         # Exit dropdown menu option

@@ -111,6 +111,7 @@ class shock_meter_mngr():
         key = random.randint(48,57)
         self.draw_meter(key)
         pygame.display.flip()
+        # send shock
         self.render("", self.subsurf, delay=1000)
         pygame.display.flip()
         self.erase_meter(key)

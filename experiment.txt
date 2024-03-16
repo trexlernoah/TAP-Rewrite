@@ -1,8 +1,6 @@
-experiment_id=
-
 subject_id=experiment
-subject_low_threshold=3.1
-subject_high_threshold=3.15
+subject_low_threshold=0.000
+subject_high_threshold=0.000
 
 pulse_increments=7.5
 
