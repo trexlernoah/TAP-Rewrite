@@ -40,11 +40,11 @@ class reaction_test_mngr():
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                    # self.render("", FG, 7650)
+                    self.render("", FG, 7650)
                     return True
 
     def ready_loop(self):
-        # self.render("GET READY!", FG, 3700)
+        self.render("GET READY!", FG, 3700)
         self.render("PRESS SPACEBAR", FG)
 
         timer_start = pygame.time.get_ticks()

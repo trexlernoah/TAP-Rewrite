@@ -43,7 +43,7 @@ def main(trials: int):
             break
         
         # Change this
-        wl = random.choice([True, False])
+        wl = random.choice([True, True])
         data.append(('W' if wl else 'L'))
         shock_fn = shock_mngr.shock_loop if wl else shock_mngr.loser_loop
 

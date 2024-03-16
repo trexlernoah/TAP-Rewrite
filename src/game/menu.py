@@ -21,6 +21,7 @@ class main_menu():
         window.resizable(width=True, height=True)
 
         self.window = window
+        self.state = {'trials': 0}
     
     def show_about_info(self):
         messagebox.showinfo(
@@ -159,7 +160,7 @@ class main_menu():
         # Checkbox for "Enable RCAP"
         # rcap_checkbox = tk.Checkbutton(window, text='Enable RCAP',variable=var1, onvalue=1, offvalue=0, command=print_selection)
         # rcap_checkbox.grid(row=1, column=4) 
-        
+        self.state['trials'] = number_of_trials
         update_variable("trials", number_of_trials, "experiment")
         if number_of_trials != None:
             for i in range(number_of_trials):
@@ -261,7 +262,7 @@ class main_menu():
         # Run dropdown menu options
         experiment_menu.add_cascade(label="Run", menu=run_menu)
         run_menu.add_command(label="Practice", command=example)
-        run_menu.add_command(label="Official", command=run_official)
+        run_menu.add_command(label="Official", command=lambda:[run_official(self.state['trials'])])
         experiment_menu.add_separator()
 
         # Exit dropdown menu option

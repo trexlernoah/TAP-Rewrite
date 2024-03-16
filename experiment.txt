@@ -1,4 +1,4 @@
-experiment_id=001
+experiment_id=
 
 subject_id=experiment
 subject_low_threshold=3.1
@@ -23,9 +23,6 @@ corresponding_interval_9=100
 delay=50
 delay_between_shocks=2500
 shock_duration=1000
-trials=5
-trial-0=5
-trial-1=5
-trial-2=5
-trial-3=5
-trial-4=5
+trials=2
+trial-0=2
+trial-1=2
