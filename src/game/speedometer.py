@@ -64,6 +64,7 @@ class shock_meter_mngr():
 
         # Initialize arc
         pygame.draw.circle(self.display, BLACK, (self.center_x, self.center_y - 250), 100, width=5, draw_top_left=True, draw_top_right=True)
+        pygame.draw.line(self.display, BLACK, (self.center_x - 100, self.center_y - 250), (self.center_x + 100, self.center_y - 250), 5)
 
     def arc_draw(self, x, y, r, n):
         for i in range (0, n):

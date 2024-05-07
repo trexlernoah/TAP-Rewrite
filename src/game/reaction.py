@@ -53,7 +53,7 @@ class reaction_test_mngr():
             current_time = pygame.time.get_ticks()
             delta_time = current_time - timer_start
 
-            if delta_time >= 3700:
+            if delta_time >= 3000:
                     self.render("PLEASE PRESS THE SPACEBAR", FG)
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -73,7 +73,7 @@ class reaction_test_mngr():
 
             for event in pygame.event.get():
                 if event.type == pygame.TEXTINPUT and event.text == ' ':
-                    if current_time > timer_release + 5000:
+                    if current_time > timer_release + 1000:
                         self.render("YOU WAITED TOO LONG", FG, 3700)
                         return False
                 elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
@@ -89,7 +89,9 @@ class reaction_test_mngr():
 
 
     def run(self):
-        current_state = game_state.START
+        # Change this
+        # Only show "Press spacebar to start" on first iteration
+        current_state = game_state.START if self.dr == [1] else game_state.READY
 
         while True:
             if current_state == game_state.START:

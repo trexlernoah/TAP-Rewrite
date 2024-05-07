@@ -1,6 +1,6 @@
 # this file should be file i/o
 import pandas as pd
-import main
+import main, time
 
 def test():
     try:
@@ -117,4 +117,5 @@ def run_official(trials: int):
     if data.empty: return
     print(data)
     data.columns = ['Trial', 'W/L', 'Shock', 'Duration', 'ReactionTime']
-    save_data(data, './src/data/test.dat')
+    filename = time.strftime("%Y%m%d-%H%M%S")
+    save_data(data, './src/data/%s.dat' % filename)
