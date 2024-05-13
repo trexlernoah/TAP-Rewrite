@@ -1,7 +1,9 @@
 import threading
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk, messagebox, simpledialog
+from tkinter import ttk, messagebox, simpledialog, filedialog
+
+import pickle
 
 # Import shock function
 # from shock import *
@@ -11,6 +13,16 @@ from backend import *
 
 # Create and initialize new window
 
+class Trial(object):
+    def __init__(self, wl, shock, feedback):
+        self.wl = wl
+        self.shock = shock
+        self.feedback = feedback
+
+# Initial state (move to const file)
+state = {'instruction': "Enter instructions here",
+         'trial-count': 0,
+         'trials': []}
 
 class main_menu():
     '''Tkinter menu class'''
@@ -21,7 +33,7 @@ class main_menu():
         window.resizable(width=True, height=True)
 
         self.window = window
-        self.state = {'trials': 0, 'instruction': ''}
+        self.state = state
     
     def create_new_instruction(self):
         def ok():
@@ -53,16 +65,16 @@ class main_menu():
         instruction_text.grid(row=0, column=0, sticky="nsew")
         btn_frame.grid(row=0, column=1, sticky="ns")
 
-        instruction_text.insert("1.0", "Enter instructions here")
+        instruction_text.insert("1.0", self.state['instruction'])
 
     def run_experiment(self):
-        if self.state['trials'] <= 0:
+        if len(self.state['trials']) <= 0:
             messagebox.showinfo(
                 title="Warning",
                 message="You must set the number of trials!"
             )
             return
-        run_official(self.state['trials'])
+        run_official(len(self.state['trials']))
 
     def show_about_info(self):
         messagebox.showinfo(
@@ -201,8 +213,8 @@ class main_menu():
         # Checkbox for "Enable RCAP"
         # rcap_checkbox = tk.Checkbutton(window, text='Enable RCAP',variable=var1, onvalue=1, offvalue=0, command=print_selection)
         # rcap_checkbox.grid(row=1, column=4) 
-        self.state['trials'] = number_of_trials if not None else 0
-        update_variable("trials", number_of_trials, "experiment")
+        # self.state['trial-count'] = number_of_trials if not None else 0
+        # update_variable("trials", number_of_trials, "experiment")
         if number_of_trials != None:
             for i in range(number_of_trials):
                 append_variable("trial-"+str(i), number_of_trials, "experiment")
@@ -240,17 +252,25 @@ class main_menu():
         columns = 3
         print(rows, columns)
         entries = [[tk.Entry() for j in range(columns)] for i in range(rows)]
+        # wl = tk.StringVar(self.window)
+
+        wl = []
+
         for i in range(0, rows):
-            for j in range(0, columns):
-                entries[i][j] = tk.Entry(frame_buttons, text=("%d,%d" % (i+1, j+1)))
-                entries[i][j].grid(row=i, column=j, sticky='news')
+            wl.append(tk.StringVar())
+            entries[i][0] = tk.OptionMenu(frame_buttons, wl[i], *('Win', 'Lose'))
+            entries[i][0].grid(row=i, column=0, sticky='news')
+            entries[i][1] = tk.Entry(frame_buttons, text=("%d,%d" % (i+1, 2)))
+            entries[i][1].grid(row=i, column=1, sticky='news')
+            entries[i][2] = tk.Entry(frame_buttons, text=("%d,%d" % (i+1, 3)))
+            entries[i][2].grid(row=i, column=2, sticky='news')
 
         # Update buttons frames idle tasks to let tkinter calculate buttons sizes
         frame_buttons.update_idletasks()
 
         # Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
         first3columns_width = sum([entries[0][j].winfo_width() for j in range(0, 3)])
-        first5rows_height = sum([entries[i][0].winfo_height() for i in range(0, 5)])
+        first5rows_height = sum([entries[i][0].winfo_height() for i in range(0, (rows if rows < 5 else 5))])
         grid_frame.config(width=first3columns_width + vsb.winfo_width(),
                             height=first5rows_height)
 
@@ -297,6 +317,29 @@ class main_menu():
 # label = Label(profile_options)
 # label.grid(row=2, column=1)
 
+    def save_experiment(self):
+        files = [('TAP files', '*.tap'),
+                 ('All files', '*.*')]
+        file = filedialog.asksaveasfile(mode="wb", filetypes=files, defaultextension='.tap')
+        if file is None:
+            return
+        pickle.dump(self.state, file)
+        file.close()
+
+    def open_experiment(self):
+        files = [('TAP files', '*.tap'),
+                 ('All files', '*.*')]
+        file = filedialog.askopenfile(mode="rb", filetypes=files, defaultextension='.tap')
+        if file is None:
+            return
+        try:
+            self.state = pickle.load(file)
+        except:
+            messagebox.showinfo(
+                title="Error",
+                message="There was an error opening the file."
+            )
+
 ### Window Management
 
     def init_main_window(self):
@@ -331,7 +374,7 @@ class main_menu():
         # Experiment dropdown menu options
         experiment_menu.add_cascade(label="Create New", menu=create_new_menu)
         # Open experiment
-        experiment_menu.add_command(label="Open Experiment", command=open_experiment)
+        experiment_menu.add_command(label="Open Experiment", command=self.open_experiment)
 
         # "Create New" dropdown menu options
         create_new_menu.add_command(label="Instruction", command=self.create_new_instruction)
@@ -344,7 +387,7 @@ class main_menu():
         experiment_menu.add_separator()
 
         # "Save Experiment" dropdown menu option
-        experiment_menu.add_command(label="Save Experiment", command=example)
+        experiment_menu.add_command(label="Save Experiment", command=self.save_experiment)
         experiment_menu.add_separator()
 
         # Run dropdown menu options

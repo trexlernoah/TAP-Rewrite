@@ -89,13 +89,6 @@ def init_experiment(filename="default"):
     f.write(main)
     f.close()
 
-# Open a file
-def open_experiment():
-    Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-    filename = filedialog.askopenfilename() # show an "Open" dialog box and return the path to the selected file
-    print(filename)
-    return filename
-
 def save_data(data: pd.DataFrame, filename: str):
     if not filename: return
     data.to_csv(filename, sep=' ', encoding='utf-8', index=False)
