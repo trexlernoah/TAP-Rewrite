@@ -21,8 +21,40 @@ class main_menu():
         window.resizable(width=True, height=True)
 
         self.window = window
-        self.state = {'trials': 0}
+        self.state = {'trials': 0, 'instruction': ''}
     
+    def create_new_instruction(self):
+        def ok():
+            self.state['instruction'] = instruction_text.get("1.0", tk.END)
+            print(self.state['instruction'])
+            new_instruction.destroy()
+        def cancel():
+            new_instruction.destroy()
+        def clear():
+            instruction_text.delete("1.0", tk.END)
+
+        new_instruction = Toplevel(self.window)
+        new_instruction.title("Instructions")
+        new_instruction.resizable(False, False)
+
+        new_instruction.rowconfigure(0, minsize=400, weight=1)
+        new_instruction.columnconfigure(0, minsize=200, weight=1)
+
+        instruction_text = tk.Text(new_instruction)
+        btn_frame = tk.Frame(new_instruction, bd=2)
+        ok_btn = tk.Button(btn_frame, text="Ok", command=ok)
+        cancel_btn = tk.Button(btn_frame, text="Cancel", command=cancel)
+        clear_btn = tk.Button(btn_frame, text="Clear Text", command=clear)
+
+        ok_btn.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+        cancel_btn.grid(row=1, column=0, sticky="ew", padx=5)
+        clear_btn.grid(row=3, column=0, sticky="ew", padx=5, pady=20)
+
+        instruction_text.grid(row=0, column=0, sticky="nsew")
+        btn_frame.grid(row=0, column=1, sticky="ns")
+
+        instruction_text.insert("1.0", "Enter instructions here")
+
     def run_experiment(self):
         if self.state['trials'] <= 0:
             messagebox.showinfo(
@@ -169,17 +201,63 @@ class main_menu():
         # Checkbox for "Enable RCAP"
         # rcap_checkbox = tk.Checkbutton(window, text='Enable RCAP',variable=var1, onvalue=1, offvalue=0, command=print_selection)
         # rcap_checkbox.grid(row=1, column=4) 
-        self.state['trials'] = number_of_trials
+        self.state['trials'] = number_of_trials if not None else 0
         update_variable("trials", number_of_trials, "experiment")
         if number_of_trials != None:
             for i in range(number_of_trials):
                 append_variable("trial-"+str(i), number_of_trials, "experiment")
-            # self.profile_parameters(trial_num=number_of_trials)
+            self.profile_parameters(trial_num=number_of_trials)
         else:
             number_of_trials=0
 
 
-    def profile_parameters(self, trial_num):
+    def profile_parameters(self, trial_num: int):
+        if not trial_num: return
+        profile_parameters = Toplevel(self.window)
+        profile_parameters.geometry("500x300")
+        profile_parameters.title("Setup Profile Parameters")
+
+        profile_parameters.grid_rowconfigure(0, weight=1)
+        profile_parameters.columnconfigure(0, weight=1)
+
+        grid_frame = tk.Frame(profile_parameters)
+        grid_frame.grid(row=0, column=0, pady=(5,0), sticky="nw")
+        grid_frame.grid_rowconfigure(0, weight=1)
+        grid_frame.grid_columnconfigure(0, weight=1)
+        grid_frame.grid_propagate(False)
+
+        canvas = tk.Canvas(grid_frame, bg="white")
+        canvas.grid(row=0, column=0, sticky="news")
+
+        vsb = tk.Scrollbar(grid_frame, orient="vertical", command=canvas.yview)
+        vsb.grid(row=0, column=1, sticky='ns')
+        canvas.configure(yscrollcommand=vsb.set)
+
+        frame_buttons = tk.Frame(canvas, bg="blue")
+        canvas.create_window((0, 0), window=frame_buttons, anchor='nw')
+
+        rows = trial_num
+        columns = 3
+        print(rows, columns)
+        entries = [[tk.Entry() for j in range(columns)] for i in range(rows)]
+        for i in range(0, rows):
+            for j in range(0, columns):
+                entries[i][j] = tk.Entry(frame_buttons, text=("%d,%d" % (i+1, j+1)))
+                entries[i][j].grid(row=i, column=j, sticky='news')
+
+        # Update buttons frames idle tasks to let tkinter calculate buttons sizes
+        frame_buttons.update_idletasks()
+
+        # Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
+        first3columns_width = sum([entries[0][j].winfo_width() for j in range(0, 3)])
+        first5rows_height = sum([entries[i][0].winfo_height() for i in range(0, 5)])
+        grid_frame.config(width=first3columns_width + vsb.winfo_width(),
+                            height=first5rows_height)
+
+        # Set the canvas scrolling region
+        canvas.config(scrollregion=canvas.bbox("all"))
+
+    def x_profile_parameters(self, trial_num):
         profile_parameters = Toplevel(self.window)
         profile_parameters.geometry("500x300")
         profile_parameters.title("Setup Profile Parameters")
@@ -252,15 +330,12 @@ class main_menu():
 
         # Experiment dropdown menu options
         experiment_menu.add_cascade(label="Create New", menu=create_new_menu)
-        experiment_menu.add_cascade(label="Open Experiment", menu=open_experiment_menu)
-
         # Open experiment
-        open_experiment_menu.add_command(label="Open Experiment", command=open_experiment)
+        experiment_menu.add_command(label="Open Experiment", command=open_experiment)
 
         # "Create New" dropdown menu options
-        create_new_menu.add_command(label="Instruction", command=example)
+        create_new_menu.add_command(label="Instruction", command=self.create_new_instruction)
         create_new_menu.add_command(label="Experiment", command=lambda:[init_experiment("experiment"), self.profile_setup()])
-        experiment_menu.add_separator()
 
         # "Edit Current" dropdown menu options
         experiment_menu.add_cascade(label="Edit Current", menu=edit_current_menu)
@@ -283,6 +358,7 @@ class main_menu():
 
         # Threshold dropdown menu options
         threshold_menu.add_command(label="Set Subject Threshold", command=self.set_subject_threshold)
+        threshold_menu.add_command(label="Options", command=example)
 
         # About dropdown menu option
         # about_menu.add_command(label="About", command=show_about_info)
