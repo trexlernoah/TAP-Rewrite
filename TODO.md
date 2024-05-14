@@ -58,3 +58,5 @@ What needs to be done:
 [ ] Run
 [ ] Practice
 [ ] Official
+
+send software list for remote access

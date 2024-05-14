@@ -1,0 +1,103 @@
+Thread 1 "python" received signal SIGSEGV, Segmentation fault.
+0x00007fffde1c6c15 in FT_Get_Char_Index ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/../pygame.libs/libfreetype-402bc0e3.so.6.18.3
+(gdb) backtrace
+#0  0x00007fffde1c6c15 in FT_Get_Char_Index ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/../pygame.libs/libfreetype-402bc0e3.so.6.18.3
+#1  0x00007fffde34e20f in ?? ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/../pygame.libs/libharfbuzz-f991c6ff.so.0.50100.0
+#2  0x00007fffde33c828 in ?? ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/../pygame.libs/libharfbuzz-f991c6ff.so.0.50100.0
+#3  0x00007fffde33f65e in ?? ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/../pygame.libs/libharfbuzz-f991c6ff.so.0.50100.0
+#4  0x00007fffde34a504 in hb_shape_plan_execute ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/../pygame.libs/libharfbuzz-f991c6ff.so.0.50100.0
+#5  0x00007fffde34a9a4 in hb_shape_full ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/../pygame.libs/libharfbuzz-f991c6ff.so.0.50100.0
+#6  0x00007fffde39b937 in ?? ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/../pygame.libs/libSDL2_ttf-2-e6bdbc24.0.so.0.2000.1
+#7  0x00007fffde3a37bc in ?? ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/p--Type <RET> for more, q to quit, c to continue without paging--
+ygame/../pygame.libs/libSDL2_ttf-2-e6bdbc24.0.so.0.2000.1
+#8  0x00007fffde3b0813 in font_render ()
+   from /home/noah/Desktop/vasu/TAP-Rewrite/.venv/lib/python3.11/site-packages/pygame/font.cpython-311-x86_64-linux-gnu.so
+#9  0x00007ffff7b62b38 in ?? () from /usr/lib/libpython3.11.so.1.0
+#10 0x00007ffff7b74237 in PyObject_Vectorcall ()
+   from /usr/lib/libpython3.11.so.1.0
+#11 0x00007ffff7b665d3 in _PyEval_EvalFrameDefault ()
+   from /usr/lib/libpython3.11.so.1.0
+#12 0x00007ffff7bad613 in ?? () from /usr/lib/libpython3.11.so.1.0
+#13 0x00007ffff7bad100 in ?? () from /usr/lib/libpython3.11.so.1.0
+#14 0x00007ffff7b6a64d in _PyEval_EvalFrameDefault ()
+   from /usr/lib/libpython3.11.so.1.0
+#15 0x00007ffff7bad613 in ?? () from /usr/lib/libpython3.11.so.1.0
+#16 0x00007ffff7bad100 in ?? () from /usr/lib/libpython3.11.so.1.0
+#17 0x00007ffff74d32d0 in ?? ()
+   from /usr/lib/python3.11/lib-dynload/_tkinter.cpython-311-x86_64-linux-gnu.so
+#18 0x00007ffff70a8800 in TclNRRunCallbacks (interp=0x5555566def70, result=0, 
+    rootPtr=0x555556b30ef0)
+    at /usr/src/debug/tcl/tcl8.6.14/generic/tclBasic.c:4539
+#19 0x00007ffff727e2d6 in TkInvokeMenu (index=<optimized out>, 
+    menuPtr=0x555556b4e520, interp=<optimized out>)
+--Type <RET> for more, q to quit, c to continue without paging--
+    at /usr/src/debug/tk/tk8.6.14/unix/../generic/tkMenu.c:1061
+#20 MenuWidgetObjCmd (clientData=0x555556b4e520, interp=0x5555566def70, 
+    objc=<optimized out>, objv=<optimized out>)
+    at /usr/src/debug/tk/tk8.6.14/unix/../generic/tkMenu.c:861
+#21 0x00007ffff70a8800 in TclNRRunCallbacks (
+    interp=interp@entry=0x5555566def70, result=0, rootPtr=0x0)
+    at /usr/src/debug/tcl/tcl8.6.14/generic/tclBasic.c:4539
+#22 0x00007ffff70a8885 in Tcl_EvalObjv (interp=interp@entry=0x5555566def70, 
+    objc=objc@entry=3, objv=objv@entry=0x5555566e3260, 
+    flags=flags@entry=2097168)
+    at /usr/src/debug/tcl/tcl8.6.14/generic/tclBasic.c:4262
+#23 0x00007ffff70aa7e5 in TclEvalEx (interp=0x5555566def70, 
+    script=0x7fffffffda00 "\n   tk::MenuInvoke .#!menu.#!menu#!menu.#!menu#!menu#!menu2 1\n", numBytes=<optimized out>, flags=<optimized out>, line=2, 
+    line@entry=1, clNextOuter=clNextOuter@entry=0x0, 
+    outerScript=0x7fffffffda00 "\n   tk::MenuInvoke .#!menu.#!menu#!menu.#!menu#!menu#!menu2 1\n") at /usr/src/debug/tcl/tcl8.6.14/generic/tclBasic.c:5408
+#24 0x00007ffff70ab097 in Tcl_EvalEx (interp=<optimized out>, 
+    script=<optimized out>, numBytes=<optimized out>, flags=<optimized out>)
+    at /usr/src/debug/tcl/tcl8.6.14/generic/tclBasic.c:5073
+#25 0x00007ffff724090a in Tk_BindEvent (bindPtr=<optimized out>, 
+    eventPtr=<optimized out>, tkwin=0x555556b4e120, 
+    numObjects=<optimized out>, objArr=<optimized out>)
+--Type <RET> for more, q to quit, c to continue without paging--
+    at /usr/src/debug/tk/tk8.6.14/unix/../generic/tkBind.c:2593
+#26 0x00007ffff72464f0 in TkBindEventProc (eventPtr=0x555556bfe310, 
+    winPtr=0x555556b4e120)
+    at /usr/src/debug/tk/tk8.6.14/unix/../generic/tkCmds.c:319
+#27 TkBindEventProc (winPtr=0x555556b4e120, eventPtr=0x555556bfe310)
+    at /usr/src/debug/tk/tk8.6.14/unix/../generic/tkCmds.c:265
+#28 0x00007ffff72578a1 in Tk_HandleEvent (
+    eventPtr=eventPtr@entry=0x555556bfe310)
+    at /usr/src/debug/tk/tk8.6.14/unix/../generic/tkEvent.c:1292
+#29 0x00007ffff7257aed in WindowEventProc (evPtr=evPtr@entry=0x555556bfe300, 
+    flags=flags@entry=-3)
+    at /usr/src/debug/tk/tk8.6.14/unix/../generic/tkEvent.c:1723
+#30 0x00007ffff7174c68 in Tcl_ServiceEvent (flags=flags@entry=-3)
+    at /usr/src/debug/tcl/tcl8.6.14/generic/tclNotify.c:670
+#31 0x00007ffff7174ec0 in Tcl_DoOneEvent (flags=-3)
+    at /usr/src/debug/tcl/tcl8.6.14/generic/tclNotify.c:903
+#32 0x00007ffff74ce6bf in ?? ()
+   from /usr/lib/python3.11/lib-dynload/_tkinter.cpython-311-x86_64-linux-gnu.so
+#33 0x00007ffff7b97fca in ?? () from /usr/lib/libpython3.11.so.1.0
+#34 0x00007ffff7b74237 in PyObject_Vectorcall ()
+   from /usr/lib/libpython3.11.so.1.0
+#35 0x00007ffff7b665d3 in _PyEval_EvalFrameDefault ()
+--Type <RET> for more, q to quit, c to continue without paging--
+   from /usr/lib/libpython3.11.so.1.0
+#36 0x00007ffff7c1fae4 in ?? () from /usr/lib/libpython3.11.so.1.0
+#37 0x00007ffff7c1f4cc in PyEval_EvalCode () from /usr/lib/libpython3.11.so.1.0
+#38 0x00007ffff7c3cd03 in ?? () from /usr/lib/libpython3.11.so.1.0
+#39 0x00007ffff7c38e0a in ?? () from /usr/lib/libpython3.11.so.1.0
+#40 0x00007ffff7c4f383 in ?? () from /usr/lib/libpython3.11.so.1.0
+#41 0x00007ffff7c4ecf5 in _PyRun_SimpleFileObject ()
+   from /usr/lib/libpython3.11.so.1.0
+#42 0x00007ffff7c4d5f8 in _PyRun_AnyFileObject ()
+   from /usr/lib/libpython3.11.so.1.0
+#43 0x00007ffff7c48098 in Py_RunMain () from /usr/lib/libpython3.11.so.1.0
+#44 0x00007ffff7c131eb in Py_BytesMain () from /usr/lib/libpython3.11.so.1.0
+#45 0x00007ffff7843cd0 in ?? () from /usr/lib/libc.so.6
+#46 0x00007ffff7843d8a in __libc_start_main () from /usr/lib/libc.so.6
+#47 0x0000555555555045 in _start ()
+

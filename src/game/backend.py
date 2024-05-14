@@ -1,4 +1,5 @@
 # this file should be file i/o
+import os
 import pandas as pd
 import main, time
 
@@ -111,4 +112,4 @@ def run_official(trials):
     print(data)
     data.columns = ['Trial', 'W/L', 'Shock', 'Duration', 'ReactionTime']
     filename = time.strftime("%Y%m%d-%H%M%S")
-    save_data(data, './src/data/%s.dat' % filename)
+    save_data(data, '%s/data/%s.dat' % (os.getcwd(), filename))
