@@ -20,7 +20,8 @@ class Trial(object):
         self.feedback = feedback
 
 # Initial state (move to const file)
-state = {'instruction': "Enter instructions here",
+state = {'filename': "",
+         'instruction': "Enter instructions here",
          'trial-count': 0,
          'trials': []}
 
@@ -35,7 +36,7 @@ class main_menu():
         self.window = window
         self.state = state
     
-    def create_new_instruction(self):
+    def create_new_instruction(self, instruction="Enter instructions here"):
         def ok():
             self.state['instruction'] = instruction_text.get("1.0", tk.END)
             print(self.state['instruction'])
@@ -65,7 +66,7 @@ class main_menu():
         instruction_text.grid(row=0, column=0, sticky="nsew")
         btn_frame.grid(row=0, column=1, sticky="ns")
 
-        instruction_text.insert("1.0", self.state['instruction'])
+        instruction_text.insert("1.0", instruction)
 
     def run_experiment(self):
         print(self.state['trials'][0])
@@ -349,16 +350,20 @@ class main_menu():
     def save_experiment(self):
         files = [('TAP files', '*.tap'),
                  ('All files', '*.*')]
-        file = filedialog.asksaveasfile(mode="wb", filetypes=files, defaultextension='.tap')
+        file = filedialog.asksaveasfile(mode="wb", 
+                                        filetypes=files, 
+                                        initialfile=self.state['filename'], 
+                                        defaultextension='.tap')
         if file is None:
             return
         try:
+            self.state['filename'] = file.name
             pickle.dump(self.state, file)
             file.close()
         except:
             messagebox.showinfo(
                 title="Error",
-                message="There was an error opening the file."
+                message="There was an error saving the file."
             )
 
     def open_experiment(self):
@@ -369,11 +374,12 @@ class main_menu():
             return
         try:
             self.state = pickle.load(file)
+            self.state['filename'] = file.name
         except:
             messagebox.showinfo(
                 title="Error",
                 message="There was an error opening the file."
-            )
+            )       
 
 ### Window Management
 
@@ -417,7 +423,7 @@ class main_menu():
 
         # "Edit Current" dropdown menu options
         experiment_menu.add_cascade(label="Edit Current", menu=edit_current_menu)
-        edit_current_menu.add_command(label="Instruction", command=example)
+        edit_current_menu.add_command(label="Instruction", command=lambda:self.create_new_instruction(self.state['instruction']))
         edit_current_menu.add_command(label="Experiment", command=example)
         experiment_menu.add_separator()
 
