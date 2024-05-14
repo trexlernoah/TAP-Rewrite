@@ -28,8 +28,8 @@ def init():
 
     return (display, subsurf)
 
-def main(trials: int):
-    if trials <= 0: return
+def main(trials):
+    if len(trials) <= 0: return
     display, subsurf = init()
 
     data = []
@@ -37,14 +37,14 @@ def main(trials: int):
     shock_mngr = shock_meter_mngr(display, subsurf, data)
 
     trial = 0
-    while trial < trials:
+    while trial < len(trials):
         data.append(trial+1)
         shock_mngr.draw_circles()
         if not react_mngr.run():
             break
         
         # Change this
-        wl = random.choice([True, False])
+        wl = trials[trial].wl == 'Win'
         data.append(('W' if wl else 'L'))
         shock_fn = shock_mngr.shock_loop if wl else shock_mngr.loser_loop
 

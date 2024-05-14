@@ -1,11 +1,9 @@
 import pygame, math, random
 from pygame import gfxdraw
 
-pygame.init()
+# pygame.init()
 
 # display = pygame.display.set_mode(1000, 800)
-
-font = pygame.font.SysFont(None, 30)
 
 RADIUS = 20
 GRAY = (225, 225, 225) 
@@ -28,6 +26,8 @@ class shock_meter_mngr():
         self.center_y = window.centery
 
         self.dr = dr
+
+        self.font = pygame.font.SysFont(None, 30)
 
     def clockwise_arc(self, point, radius, startAngle, endAngle):
         rect = pygame.Rect(0, 0, radius*2, radius*2)
@@ -53,13 +53,13 @@ class shock_meter_mngr():
             offset = -280 + i * 50
             x = self.center_x + offset
             y = (self.center_y - 30) + (self.center_y / 2)
-            text = font.render(str(i), 1, BLACK)
+            text = self.font.render(str(i), 1, BLACK)
             self.display.blit(text, (x, y))
 
-        low_text = font.render("Low", 1, BLACK)
+        low_text = self.font.render("Low", 1, BLACK)
         self.display.blit(low_text, (self.center_x - 230, (self.center_y + 10) + (self.center_y / 2)))
 
-        high_text = font.render("High", 1, BLACK)
+        high_text = self.font.render("High", 1, BLACK)
         self.display.blit(high_text, (self.center_x + 220, (self.center_y + 10) + (self.center_y / 2)))
 
         # Initialize arc
@@ -100,7 +100,7 @@ class shock_meter_mngr():
 
     def render(self, text, surface: pygame.Surface, color=FG, delay = 0):
         surface.fill(BG)
-        text_block = font.render(text, 1, color)
+        text_block = self.font.render(text, 1, color)
         surface.blit(text_block, text_block.get_rect(center = surface.get_rect().center))
         pygame.display.flip()
         pygame.time.wait(delay)

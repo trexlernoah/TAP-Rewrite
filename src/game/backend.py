@@ -103,8 +103,8 @@ def save_data(data: pd.DataFrame, filename: str):
 # update_variable("subject_low_threshold", 1.00, "experiment")
 # update_variable("subject_high_threshold", 2.00, "experiment")
 # update_variable("corresponding_interval_0", 2.054, "experiment")
-def run_official(trials: int):
-    if trials == 0: return
+def run_official(trials):
+    if len(trials) == 0: return
     data = main.main(trials)
     # throw error here
     if data.empty: return

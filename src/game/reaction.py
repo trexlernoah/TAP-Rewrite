@@ -1,12 +1,8 @@
 from enum import Enum
 import pygame, random
 
-pygame.init()
-
 # display = pygame.display.set_mode((640, 480))
 # pygame.display.set_caption("Reaction Time Test")
-
-font = pygame.font.SysFont(None, 30)
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -27,9 +23,11 @@ class reaction_test_mngr():
         self.display = display
         self.dr = dr
 
+        self.font = pygame.font.SysFont(None, 30)
+
     def render(self, text, color, delay = 0):
         self.display.fill(BG)
-        text_block = font.render(text, 1, color)
+        text_block = self.font.render(text, 1, color)
         self.display.blit(text_block, text_block.get_rect(center = self.display.get_rect().center))
         pygame.display.flip()
         pygame.time.wait(delay)

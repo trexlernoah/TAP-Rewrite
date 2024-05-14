@@ -68,13 +68,14 @@ class main_menu():
         instruction_text.insert("1.0", self.state['instruction'])
 
     def run_experiment(self):
+        print(self.state['trials'][0])
         if len(self.state['trials']) <= 0:
             messagebox.showinfo(
                 title="Warning",
                 message="You must set the number of trials!"
             )
             return
-        run_official(len(self.state['trials']))
+        run_official(self.state['trials'])
 
     def show_about_info(self):
         messagebox.showinfo(
@@ -224,9 +225,23 @@ class main_menu():
 
 
     def profile_parameters(self, trial_num: int):
+        def ok(wl, entries):
+            trials = []
+            for i in range(1, len(entries)):
+                # res.append()
+                # self.state['trials']
+                print(wl[i-1].get())
+                print(entries[i][2].get())
+                print(entries[i][3].get())
+                trials.append(Trial(wl[i-1].get(), 
+                                    entries[i][2].get(), 
+                                    entries[i][3].get()))
+            self.state['trials'] = trials
+            profile_parameters.destroy()
+
         if not trial_num: return
         profile_parameters = Toplevel(self.window)
-        profile_parameters.geometry("500x300")
+        profile_parameters.geometry("600x400")
         profile_parameters.title("Setup Profile Parameters")
 
         profile_parameters.grid_rowconfigure(0, weight=1)
@@ -245,37 +260,51 @@ class main_menu():
         vsb.grid(row=0, column=1, sticky='ns')
         canvas.configure(yscrollcommand=vsb.set)
 
-        frame_buttons = tk.Frame(canvas, bg="blue")
+        frame_buttons = tk.Frame(canvas)
         canvas.create_window((0, 0), window=frame_buttons, anchor='nw')
 
-        rows = trial_num
-        columns = 3
+        rows = trial_num + 1
+        columns = 4
         print(rows, columns)
         entries = [[tk.Entry() for j in range(columns)] for i in range(rows)]
         # wl = tk.StringVar(self.window)
 
         wl = []
 
-        for i in range(0, rows):
+        label1 = tk.Label(frame_buttons, text="Win or Lose")
+        label1.grid(row=0, column=1, sticky='news')
+        label2 = tk.Label(frame_buttons, text="Shock")
+        label2.grid(row=0, column=2, sticky='news')
+        label3 = tk.Label(frame_buttons, text="Feedback")
+        label3.grid(row=0, column=3, sticky='news')
+
+        for i in range(1, rows):
             wl.append(tk.StringVar())
-            entries[i][0] = tk.OptionMenu(frame_buttons, wl[i], *('Win', 'Lose'))
+
+            entries[i][0] = tk.Label(frame_buttons, text=("Trial %d" % i))
             entries[i][0].grid(row=i, column=0, sticky='news')
-            entries[i][1] = tk.Entry(frame_buttons, text=("%d,%d" % (i+1, 2)))
+
+            entries[i][1] = tk.OptionMenu(frame_buttons, wl[i-1], *('Win', 'Lose'))
             entries[i][1].grid(row=i, column=1, sticky='news')
-            entries[i][2] = tk.Entry(frame_buttons, text=("%d,%d" % (i+1, 3)))
+            entries[i][2] = tk.Entry(frame_buttons)
             entries[i][2].grid(row=i, column=2, sticky='news')
+            entries[i][3] = tk.Entry(frame_buttons)
+            entries[i][3].grid(row=i, column=3, sticky='news')
 
         # Update buttons frames idle tasks to let tkinter calculate buttons sizes
         frame_buttons.update_idletasks()
 
         # Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
-        first3columns_width = sum([entries[0][j].winfo_width() for j in range(0, 3)])
-        first5rows_height = sum([entries[i][0].winfo_height() for i in range(0, (rows if rows < 5 else 5))])
-        grid_frame.config(width=first3columns_width + vsb.winfo_width(),
-                            height=first5rows_height)
+        # first4columns_width = sum([entries[0][j].winfo_width() for j in range(0, 4)])
+        # first5rows_height = sum([entries[i][0].winfo_height() for i in range(0, (rows if rows < 5 else 5))])
+        grid_frame.config(width=600 + vsb.winfo_width(),
+                            height=200)
 
         # Set the canvas scrolling region
         canvas.config(scrollregion=canvas.bbox("all"))
+
+        ok_btn = tk.Button(profile_parameters, text="Ok", command=lambda : ok(wl, entries))
+        ok_btn.grid(row=rows+1, column=0)
 
     def x_profile_parameters(self, trial_num):
         profile_parameters = Toplevel(self.window)
@@ -323,8 +352,14 @@ class main_menu():
         file = filedialog.asksaveasfile(mode="wb", filetypes=files, defaultextension='.tap')
         if file is None:
             return
-        pickle.dump(self.state, file)
-        file.close()
+        try:
+            pickle.dump(self.state, file)
+            file.close()
+        except:
+            messagebox.showinfo(
+                title="Error",
+                message="There was an error opening the file."
+            )
 
     def open_experiment(self):
         files = [('TAP files', '*.tap'),
