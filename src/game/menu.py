@@ -280,16 +280,28 @@ class main_menu():
         label3.grid(row=0, column=3, sticky='news')
 
         for i in range(1, rows):
-            wl.append(tk.StringVar())
+            shock_entry = tk.Entry(frame_buttons)
+            feedback_entry = tk.Entry(frame_buttons)
+            def is_disabled(*args):
+                print(args)
+                if wl_var.get() == 'Win':
+                    shock_entry.configure(state='normal')
+                    feedback_entry.configure(state='normal')
+                else:
+                    shock_entry.configure(state='disabled')
+                    feedback_entry.configure(state='disabled')
+
+            wl_var = tk.StringVar()
+            wl.append(wl_var)
 
             entries[i][0] = tk.Label(frame_buttons, text=("Trial %d" % i))
             entries[i][0].grid(row=i, column=0, sticky='news')
 
-            entries[i][1] = tk.OptionMenu(frame_buttons, wl[i-1], *('Win', 'Lose'))
+            entries[i][1] = tk.OptionMenu(frame_buttons, wl_var, *('Win', 'Lose'), command=is_disabled)
             entries[i][1].grid(row=i, column=1, sticky='news')
-            entries[i][2] = tk.Entry(frame_buttons)
+            entries[i][2] = shock_entry
             entries[i][2].grid(row=i, column=2, sticky='news')
-            entries[i][3] = tk.Entry(frame_buttons)
+            entries[i][3] = feedback_entry
             entries[i][3].grid(row=i, column=3, sticky='news')
 
         # Update buttons frames idle tasks to let tkinter calculate buttons sizes

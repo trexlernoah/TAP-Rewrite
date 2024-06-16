@@ -117,8 +117,8 @@ class shock_meter_mngr():
         pygame.display.flip()
         self.erase_meter(key)
         pygame.display.flip()
-        self.dr.append('---')
-        self.dr.append('-----')
+        self.dr[3] = '---'
+        self.dr[4] = '-----'
         return True
 
     def shock_loop(self):
@@ -138,7 +138,7 @@ class shock_meter_mngr():
                 if event.type == pygame.KEYDOWN and event.key in range(48, 58) and not key_pressed: # start
                     key_pressed = event.unicode
                     print("Shock: %s" % ("10" if key_pressed == "0" else key_pressed))
-                    self.dr.append(("10" if key_pressed == "0" else key_pressed))
+                    self.dr[2] = ("10" if key_pressed == "0" else key_pressed)
                     if time_held == 0:
                         self.render("", self.subsurf)
                         self.draw_meter(event.key)
@@ -151,7 +151,7 @@ class shock_meter_mngr():
                         time_held = current_time - time_held
                         self.erase_meter(event.key)
                         print("Duration: %d ms" % (time_held))
-                        self.dr.append(time_held)
+                        self.dr[3] = str(time_held)
                         self.render("YOU ARE DONE SHOCKING!", self.subsurf, delay=5000)
                         return True
             pygame.display.flip()

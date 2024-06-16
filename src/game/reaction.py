@@ -81,7 +81,7 @@ class reaction_test_mngr():
                     else:
                         reaction_time = current_time - timer_release
                         print("ReactionTime: %d ms" % (reaction_time))
-                        self.dr.append(reaction_time)
+                        self.dr[4] = str(reaction_time)
                         return True
             pygame.display.flip()
 
@@ -89,7 +89,7 @@ class reaction_test_mngr():
     def run(self):
         # Change this
         # Only show "Press spacebar to start" on first iteration
-        current_state = game_state.START if self.dr == [1] else game_state.READY
+        current_state = game_state.START if self.dr[0] == 1 else game_state.READY
 
         while True:
             if current_state == game_state.START:

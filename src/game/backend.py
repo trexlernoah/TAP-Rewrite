@@ -5,7 +5,7 @@ import main, time
 
 def test():
     try:
-        df = pd.read_csv('./src/data/eg.dat', delimiter=' ', skiprows=4)
+        df = pd.read_csv('./src/data/eg.dat', delimiter='\t', skiprows=4)
         print(df)
     except FileNotFoundError:
         print(f"File 'eg.dat' not found.")
@@ -92,7 +92,7 @@ def init_experiment(filename="default"):
 
 def save_data(data: pd.DataFrame, filename: str):
     if not filename: return
-    data.to_csv(filename, sep=' ', encoding='utf-8', index=False)
+    data.to_csv(filename, sep='\t', encoding='utf-8', index=False)
 
 # Fix
 # Fill with variables later
@@ -110,6 +110,6 @@ def run_official(trials):
     # throw error here
     if data.empty: return
     print(data)
-    data.columns = ['Trial', 'W/L', 'Shock', 'Duration', 'ReactionTime']
+    data.columns = ['Trial', 'W/L', 'Shock Intensity', 'Shock Duration', 'Reaction Time']
     filename = time.strftime("%Y%m%d-%H%M%S")
     save_data(data, '%s/data/%s.dat' % (os.getcwd(), filename))
