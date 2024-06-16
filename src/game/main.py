@@ -40,6 +40,7 @@ def main(trials):
     while trial < len(trials):
         data[0] = str(trial+1)
         shock_mngr.draw_circles() 
+        print('hi')
 
         if not react_mngr.run():
             break

@@ -1,21 +1,6 @@
-from enum import Enum
 import pygame, random
 
-# display = pygame.display.set_mode((640, 480))
-# pygame.display.set_caption("Reaction Time Test")
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-
-BG = WHITE
-FG = BLACK
-
-class game_state(Enum):
-    START = 1
-    READY = 2
-    HOLD = 3
-    SHOCK = 4
+from constants import *
 
 class reaction_test_mngr():
     '''Reaction test drawing'''

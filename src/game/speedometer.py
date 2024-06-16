@@ -1,19 +1,8 @@
 import pygame, math, random
-from pygame import gfxdraw
 
-# pygame.init()
-
-# display = pygame.display.set_mode(1000, 800)
+from constants import *
 
 RADIUS = 20
-GRAY = (225, 225, 225) 
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-
-BG = WHITE
-FG = BLACK
 
 class shock_meter_mngr():
     '''Shock meter drawing'''
@@ -27,7 +16,7 @@ class shock_meter_mngr():
 
         self.dr = dr
 
-        self.font = pygame.font.SysFont(None, 30)
+        self.font = pygame.font.SysFont(None, 30)        
 
     def clockwise_arc(self, point, radius, startAngle, endAngle):
         rect = pygame.Rect(0, 0, radius*2, radius*2)
@@ -46,7 +35,6 @@ class shock_meter_mngr():
             offset = -275 + i * 50
             x = int(self.center_x + offset)
             y = int((self.center_y - 60) + (self.center_y / 2))
-            # gfxdraw.aacircle(self.display, x, y, RADIUS, BLACK)
             pygame.draw.circle(self.display, BLACK, (x, y), RADIUS, 3)
             
             # Draw text
@@ -66,11 +54,6 @@ class shock_meter_mngr():
         pygame.draw.circle(self.display, BLACK, (self.center_x, self.center_y - 250), 100, width=5, draw_top_left=True, draw_top_right=True)
         pygame.draw.line(self.display, BLACK, (self.center_x - 100, self.center_y - 250), (self.center_x + 100, self.center_y - 250), 5)
 
-    def arc_draw(self, x, y, r, n):
-        for i in range (0, n):
-            x2 = math.cos(math.radians())
-            gfxdraw.filled_trigon(self.display, x, y,)
-
     def draw_meter(self, _key):
         key = _key - 48
         if key == 0:
@@ -81,7 +64,6 @@ class shock_meter_mngr():
         x = int(self.center_x + offset)
         y = int((self.center_y - 60) + (self.center_y / 2))
         pygame.draw.circle(self.display, RED, (x, y), RADIUS, 39)
-        # gfxdraw.filled_circle(self.display, x, y, RADIUS, RED)
         rect, startRad, endRad = self.clockwise_arc((self.center_x, self.center_y - 250), 95, 180, (180+(180/10 * key)))
         pygame.draw.arc(self.display, RED, rect, startRad, endRad, 95)
         pygame.display.flip()

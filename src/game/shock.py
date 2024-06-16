@@ -1,4 +1,4 @@
-# import nidaqmx
+import nidaqmx
 import time
 
 # Parameters:

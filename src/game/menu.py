@@ -1,29 +1,9 @@
-import threading
+import threading, pickle, time, os
 import tkinter as tk
-from tkinter import *
 from tkinter import ttk, messagebox, simpledialog, filedialog
 
-import pickle
-
-# Import shock function
-# from shock import *
-
-# Global variables 
-from backend import *
-
-# Create and initialize new window
-
-class Trial(object):
-    def __init__(self, wl, shock, feedback):
-        self.wl = wl
-        self.shock = shock
-        self.feedback = feedback
-
-# Initial state (move to const file)
-state = {'filename': "",
-         'instruction': "Enter instructions here",
-         'trial-count': 0,
-         'trials': []}
+import main, constants
+from utils import *
 
 class main_menu():
     '''Tkinter menu class'''
@@ -34,7 +14,7 @@ class main_menu():
         window.resizable(width=True, height=True)
 
         self.window = window
-        self.state = state
+        self.state = constants.initial_state
     
     def create_new_instruction(self, instruction="Enter instructions here"):
         def ok():
@@ -46,7 +26,7 @@ class main_menu():
         def clear():
             instruction_text.delete("1.0", tk.END)
 
-        new_instruction = Toplevel(self.window)
+        new_instruction = tk.Toplevel(self.window)
         new_instruction.title("Instructions")
         new_instruction.resizable(False, False)
 
@@ -68,6 +48,17 @@ class main_menu():
 
         instruction_text.insert("1.0", instruction)
 
+
+    def run_official(self, trials):
+        if len(trials) == 0: return
+        data = main.main(trials)
+        # throw error here
+        if data.empty: return
+        print(data)
+        data.columns = ['Trial', 'W/L', 'Shock Intensity', 'Shock Duration', 'Reaction Time']
+        filename = time.strftime("%Y%m%d-%H%M%S")
+        save_data(data, '%s/data/%s.dat' % (os.getcwd(), filename))
+
     def run_experiment(self):
         print(self.state['trials'][0])
         if len(self.state['trials']) <= 0:
@@ -76,7 +67,7 @@ class main_menu():
                 message="You must set the number of trials!"
             )
             return
-        run_official(self.state['trials'])
+        self.run_official(self.state['trials'])
 
     def show_about_info(self):
         messagebox.showinfo(
@@ -85,7 +76,7 @@ class main_menu():
         )
 
     def set_options(self):
-        options = Toplevel(self.window)
+        options = tk.Toplevel(self.window)
         options.geometry("400x200")
         options.title("Options")
 
@@ -97,7 +88,7 @@ class main_menu():
         options_tab.add(timing_options, text="Timing")
 
     def set_subject_threshold(self):
-        subject_threshold = Toplevel(self.window)
+        subject_threshold = tk.Toplevel(self.window)
         subject_threshold.geometry("300x200")
         subject_threshold.resizable(False, False)
         subject_threshold.title("Subject Threshold")
@@ -108,7 +99,7 @@ class main_menu():
         subject_id_entry = tk.Entry(subject_threshold)
         subject_id_entry.grid(row=1, column=2)
         id_num = subject_id_entry.get()
-        update_variable("experiment_id", str(id_num), "experiment")
+        # update_variable("experiment_id", str(id_num), "experiment")
         # update_variable("experiment_id", '001', "experiment")
 
         set_lower_level = tk.Label(subject_threshold, text="Set Lower Level")
@@ -180,9 +171,9 @@ class main_menu():
         def write_data():
             global i
             global j
-            update_variable("subject_low_threshold", str(i), "experiment")
+            # update_variable("subject_low_threshold", str(i), "experiment")
             print("Writing low shock of " + str(i) + " milliamps to file")
-            update_variable("subject_high_threshold", str(j), "experiment")
+            # update_variable("subject_high_threshold", str(j), "experiment")
             print("Writing high shock of " + str(j) + " milliamps to file")
 
         start_lower_level = tk.Button(subject_threshold, relief='groove', text="Start", padx=10, pady=10, command=low_button_starter)
@@ -218,8 +209,8 @@ class main_menu():
         # self.state['trial-count'] = number_of_trials if not None else 0
         # update_variable("trials", number_of_trials, "experiment")
         if number_of_trials != None:
-            for i in range(number_of_trials):
-                append_variable("trial-"+str(i), number_of_trials, "experiment")
+            # for i in range(number_of_trials):
+                # append_variable("trial-"+str(i), number_of_trials, "experiment")
             self.profile_parameters(trial_num=number_of_trials)
         else:
             number_of_trials=0
@@ -234,14 +225,14 @@ class main_menu():
                 print(wl[i-1].get())
                 print(entries[i][2].get())
                 print(entries[i][3].get())
-                trials.append(Trial(wl[i-1].get(), 
+                trials.append(constants.Trial(wl[i-1].get(), 
                                     entries[i][2].get(), 
                                     entries[i][3].get()))
             self.state['trials'] = trials
             profile_parameters.destroy()
 
         if not trial_num: return
-        profile_parameters = Toplevel(self.window)
+        profile_parameters = tk.Toplevel(self.window)
         profile_parameters.geometry("600x400")
         profile_parameters.title("Setup Profile Parameters")
 
@@ -284,7 +275,7 @@ class main_menu():
             feedback_entry = tk.Entry(frame_buttons)
             def is_disabled(*args):
                 print(args)
-                if wl_var.get() == 'Win':
+                if wl_var.get() == 'Lose':
                     shock_entry.configure(state='normal')
                     feedback_entry.configure(state='normal')
                 else:
@@ -319,46 +310,6 @@ class main_menu():
         ok_btn = tk.Button(profile_parameters, text="Ok", command=lambda : ok(wl, entries))
         ok_btn.grid(row=rows+1, column=0)
 
-    def x_profile_parameters(self, trial_num):
-        profile_parameters = Toplevel(self.window)
-        profile_parameters.geometry("500x300")
-        profile_parameters.title("Setup Profile Parameters")
-
-        # Initialize array of trial elements for later
-        ref = []
-        for i in range(trial_num):
-            trial = tk.Label(profile_parameters, text="Trial "+str(i+1))
-            trial.grid(row=i, column=0)
-
-            shock_duration_label = tk.Label(profile_parameters, text="Shock Duration: ")
-            shock_duration_label.grid(row=i, column=1)
-            shock_duration = Entry(profile_parameters)
-            
-            # Hardcoding the default shock value because having issues parsing it out of the .txt file
-            shock_duration.insert(0, 1000)
-            shock_duration.grid(row=i, column=2)
-
-            ref.append(trial)
-        
-        def check_shock_output():
-            done=False
-            for i in ref:
-                if(len(i.get()) < 0):
-                    done=True
-
-            if (done == False):
-                print("Done")
-            else:
-                print("Not done")
-            
-        # Fix
-        # Use a for loop and this article: https://stackoverflow.com/questions/15801199/tkinter-addressing-label-widget-created-by-for-loop
-        # to generate Trial labels as needed
-
-    
-# label = Label(profile_options)
-# label.grid(row=2, column=1)
-
     def save_experiment(self):
         files = [('TAP files', '*.tap'),
                  ('All files', '*.*')]
@@ -392,6 +343,10 @@ class main_menu():
                 title="Error",
                 message="There was an error opening the file."
             )       
+    
+    def edit_experiment(self): 
+        # if self.state[]
+        print("")
 
 ### Window Management
 
@@ -431,12 +386,12 @@ class main_menu():
 
         # "Create New" dropdown menu options
         create_new_menu.add_command(label="Instruction", command=self.create_new_instruction)
-        create_new_menu.add_command(label="Experiment", command=lambda:[init_experiment("experiment"), self.profile_setup()])
+        create_new_menu.add_command(label="Experiment", command=self.profile_setup)
 
         # "Edit Current" dropdown menu options
         experiment_menu.add_cascade(label="Edit Current", menu=edit_current_menu)
         edit_current_menu.add_command(label="Instruction", command=lambda:self.create_new_instruction(self.state['instruction']))
-        edit_current_menu.add_command(label="Experiment", command=example)
+        edit_current_menu.add_command(label="Experiment")
         experiment_menu.add_separator()
 
         # "Save Experiment" dropdown menu option
@@ -445,7 +400,7 @@ class main_menu():
 
         # Run dropdown menu options
         experiment_menu.add_cascade(label="Run", menu=run_menu)
-        run_menu.add_command(label="Practice", command=example)
+        run_menu.add_command(label="Practice")
         run_menu.add_command(label="Official", command=self.run_experiment)
         experiment_menu.add_separator()
 
@@ -454,7 +409,7 @@ class main_menu():
 
         # Threshold dropdown menu options
         threshold_menu.add_command(label="Set Subject Threshold", command=self.set_subject_threshold)
-        threshold_menu.add_command(label="Options", command=example)
+        threshold_menu.add_command(label="Options")
 
         # About dropdown menu option
         # about_menu.add_command(label="About", command=show_about_info)
