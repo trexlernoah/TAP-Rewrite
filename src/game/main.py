@@ -3,12 +3,12 @@ TODO
 -refactor reaction.py to accept a shared surface on global display 
 '''
 
-import pygame, random
-import pandas as pd
-import numpy as np
+import pygame
 
 from reaction import reaction_test_mngr
 from speedometer import shock_meter_mngr
+
+from utils import *
 
 def init():
     pygame.init()
@@ -32,40 +32,41 @@ def main(trials):
     if len(trials) <= 0: return
     display, subsurf = init()
 
-    data = ['','','','','']
-    react_mngr = reaction_test_mngr(subsurf, data)
-    shock_mngr = shock_meter_mngr(display, subsurf, data)
+    # TODO replace with subj id and thresholds
+    main_data = Data(0,0,0)
+
+    react_mngr = reaction_test_mngr(subsurf)
+    shock_mngr = shock_meter_mngr(display, subsurf)
 
     trial = 0
     while trial < len(trials):
-        data[0] = str(trial+1)
-        shock_mngr.draw_circles() 
-        print('hi')
+        data_row = DataRow(str(trial+1))
 
-        if not react_mngr.run():
+        shock_mngr.draw_circles() 
+
+        reaction_data = react_mngr.run(trial == 0)
+        if reaction_data is None:
             break
+        else:
+            data_row.reaction_time = reaction_data
 
         # Change this
         wl = trials[trial].wl == 'Win'
-        data[1] = ('W' if wl else 'L')
-        shock_fn = shock_mngr.shock_loop if wl else shock_mngr.loser_loop
+        data_row.wl = ('W' if wl else 'L')
 
-        if not shock_fn():
-            break
+        if wl:
+            trial_data = shock_mngr.shock_loop()
+            if trial_data is not None:
+                data_row.shock_intensity, data_row.shock_duration = trial_data
+        else:
+            shock_mngr.loser_loop()
+            
+        main_data.append_data_row(data_row)
         trial += 1
 
-    # Bad 
-    df = np.empty((0,5))
-    for i in range(0, len(data), 5):
-        dr = []
-        for j in range(i, i+5):
-            dr.append(data[j])
-        df = np.append(df, np.array([dr]), axis=0)
-
-    df = pd.DataFrame(df)
     pygame.quit()
 
-    return df
+    return main_data
 
 if __name__ == "__main__":
     main()

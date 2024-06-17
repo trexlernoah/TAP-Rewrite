@@ -52,12 +52,12 @@ class main_menu():
     def run_official(self, trials):
         if len(trials) == 0: return
         data = main.main(trials)
+        df = data.get_data_frame()
         # throw error here
-        if data.empty: return
-        print(data)
-        data.columns = ['Trial', 'W/L', 'Shock Intensity', 'Shock Duration', 'Reaction Time']
+        if df.empty: return
+        print(df)
         filename = time.strftime("%Y%m%d-%H%M%S")
-        save_data(data, '%s/data/%s.dat' % (os.getcwd(), filename))
+        data.save_data('%s/data/%s.dat' % (os.getcwd(), filename))
 
     def run_experiment(self):
         print(self.state['trials'][0])
@@ -225,7 +225,7 @@ class main_menu():
                 print(wl[i-1].get())
                 print(entries[i][2].get())
                 print(entries[i][3].get())
-                trials.append(constants.Trial(wl[i-1].get(), 
+                trials.append(Trial(wl[i-1].get(), 
                                     entries[i][2].get(), 
                                     entries[i][3].get()))
             self.state['trials'] = trials

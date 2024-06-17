@@ -1,14 +1,15 @@
 import pygame, random
 
 from constants import *
+from utils import *
 
 class reaction_test_mngr():
     '''Reaction test drawing'''
-    def __init__(self, display: pygame.Surface, dr: list):
+    def __init__(self, display: pygame.Surface):
         self.display = display
-        self.dr = dr
-
         self.font = pygame.font.SysFont(None, 30)
+
+        self.reaction_time = ''
 
     def render(self, text, color, delay = 0):
         self.display.fill(BG)
@@ -66,15 +67,15 @@ class reaction_test_mngr():
                     else:
                         reaction_time = current_time - timer_release
                         print("ReactionTime: %d ms" % (reaction_time))
-                        self.dr[4] = str(reaction_time)
+                        self.reaction_time = str(reaction_time)
                         return True
             pygame.display.flip()
 
 
-    def run(self):
+    def run(self, first_trial: bool):
         # Change this
         # Only show "Press spacebar to start" on first iteration
-        current_state = game_state.START if self.dr[0] == 1 else game_state.READY
+        current_state = game_state.START if first_trial else game_state.READY
 
         while True:
             if current_state == game_state.START:
@@ -84,8 +85,8 @@ class reaction_test_mngr():
             elif current_state == game_state.HOLD:
                 current_state = game_state.SHOCK if self.hold_loop() else game_state.READY
             elif current_state == game_state.SHOCK:
-                return True
+                return self.reaction_time
             else:
-                return False
+                return None
 
             pygame.display.flip()

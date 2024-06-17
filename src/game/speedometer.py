@@ -1,20 +1,17 @@
 import pygame, math, random
 
 from constants import *
-
-RADIUS = 20
+from utils import *
 
 class shock_meter_mngr():
     '''Shock meter drawing'''
-    def __init__(self, display: pygame.Surface, subsurf: pygame.Surface, dr: list):
+    def __init__(self, display: pygame.Surface, subsurf: pygame.Surface):
         self.display = display
         self.subsurf = subsurf
 
         window = display.get_rect()
         self.center_x = window.centerx
         self.center_y = window.centery
-
-        self.dr = dr
 
         self.font = pygame.font.SysFont(None, 30)        
 
@@ -99,9 +96,7 @@ class shock_meter_mngr():
         pygame.display.flip()
         self.erase_meter(key)
         pygame.display.flip()
-        self.dr[3] = '---'
-        self.dr[4] = '-----'
-        return True
+        return None
 
     def shock_loop(self):
         self.render("YOU WON! YOU GET TO GIVE A SHOCK", self.subsurf)
@@ -109,6 +104,8 @@ class shock_meter_mngr():
         timer_start = pygame.time.get_ticks()
         time_held = 0
         key_pressed = None
+        shock_intensity = None
+        shock_duration = None
 
         while True:
             current_time = pygame.time.get_ticks()
@@ -118,9 +115,9 @@ class shock_meter_mngr():
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key in range(48, 58) and not key_pressed: # start
-                    key_pressed = event.unicode
+                    key_pressed = str(event.unicode)
                     print("Shock: %s" % ("10" if key_pressed == "0" else key_pressed))
-                    self.dr[2] = ("10" if key_pressed == "0" else key_pressed)
+                    shock_intensity = ("10" if key_pressed == "0" else key_pressed)
                     if time_held == 0:
                         self.render("", self.subsurf)
                         self.draw_meter(event.key)
@@ -133,7 +130,7 @@ class shock_meter_mngr():
                         time_held = current_time - time_held
                         self.erase_meter(event.key)
                         print("Duration: %d ms" % (time_held))
-                        self.dr[3] = str(time_held)
+                        shock_duration = str(time_held)
                         self.render("YOU ARE DONE SHOCKING!", self.subsurf, delay=5000)
-                        return True
+                        return (shock_intensity, shock_duration)
             pygame.display.flip()
