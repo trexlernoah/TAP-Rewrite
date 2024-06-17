@@ -5,7 +5,7 @@ from utils import *
 
 class shock_meter_mngr():
     '''Shock meter drawing'''
-    def __init__(self, display: pygame.Surface, subsurf: pygame.Surface):
+    def __init__(self, display: pygame.Surface, subsurf: pygame.Surface, data: Data):
         self.display = display
         self.subsurf = subsurf
 
@@ -13,7 +13,9 @@ class shock_meter_mngr():
         self.center_x = window.centerx
         self.center_y = window.centery
 
-        self.font = pygame.font.SysFont(None, 30)        
+        self.font = pygame.font.SysFont(None, 30)    
+
+        self.data = data    
 
     def clockwise_arc(self, point, radius, startAngle, endAngle):
         rect = pygame.Rect(0, 0, radius*2, radius*2)
@@ -96,7 +98,7 @@ class shock_meter_mngr():
         pygame.display.flip()
         self.erase_meter(key)
         pygame.display.flip()
-        return None
+        return True
 
     def shock_loop(self):
         self.render("YOU WON! YOU GET TO GIVE A SHOCK", self.subsurf)
@@ -104,20 +106,21 @@ class shock_meter_mngr():
         timer_start = pygame.time.get_ticks()
         time_held = 0
         key_pressed = None
-        shock_intensity = None
-        shock_duration = None
+
+        data_row = self.data.current_data_row
 
         while True:
             current_time = pygame.time.get_ticks()
 
             if current_time >= timer_start + 4000 and time_held == 0:
                 self.render("YOU MUST PRESS A SHOCK BUTTON", self.subsurf)
+                self.data.current_error.add_error(ErrorMessage.WAIT_TO_SHOCK)
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key in range(48, 58) and not key_pressed: # start
                     key_pressed = str(event.unicode)
                     print("Shock: %s" % ("10" if key_pressed == "0" else key_pressed))
-                    shock_intensity = ("10" if key_pressed == "0" else key_pressed)
+                    data_row.shock_intensity = ("10" if key_pressed == "0" else key_pressed)
                     if time_held == 0:
                         self.render("", self.subsurf)
                         self.draw_meter(event.key)
@@ -125,12 +128,13 @@ class shock_meter_mngr():
                 elif event.type == pygame.TEXTINPUT and event.text == key_pressed: # hold
                     if current_time > time_held + 7000:
                         self.render("YOU ARE DONE SHOCKING! PLEASE RELEASE SHOCK BUTTON", self.subsurf)
+                        self.data.current_error.add_error(ErrorMessage.SHOCK_TOO_LONG)
                 elif event.type == pygame.KEYUP and event.unicode == key_pressed: # end
                     if current_time > timer_start:
                         time_held = current_time - time_held
                         self.erase_meter(event.key)
                         print("Duration: %d ms" % (time_held))
-                        shock_duration = str(time_held)
+                        data_row.shock_duration = str(time_held)
                         self.render("YOU ARE DONE SHOCKING!", self.subsurf, delay=5000)
-                        return (shock_intensity, shock_duration)
+                        return True
             pygame.display.flip()

@@ -35,33 +35,30 @@ def main(trials):
     # TODO replace with subj id and thresholds
     main_data = Data(0,0,0)
 
-    react_mngr = reaction_test_mngr(subsurf)
-    shock_mngr = shock_meter_mngr(display, subsurf)
+    react_mngr = reaction_test_mngr(subsurf, main_data)
+    shock_mngr = shock_meter_mngr(display, subsurf, main_data)
 
     trial = 0
+    main_data.generate_new_data(trial+1)
     while trial < len(trials):
-        data_row = DataRow(str(trial+1))
-
         shock_mngr.draw_circles() 
 
         reaction_data = react_mngr.run(trial == 0)
-        if reaction_data is None:
+        if not reaction_data:
             break
-        else:
-            data_row.reaction_time = reaction_data
 
         # Change this
         wl = trials[trial].wl == 'Win'
-        data_row.wl = ('W' if wl else 'L')
+        main_data.current_data_row.wl = ('W' if wl else 'L')
 
         if wl:
             trial_data = shock_mngr.shock_loop()
-            if trial_data is not None:
-                data_row.shock_intensity, data_row.shock_duration = trial_data
+            if trial_data is None:
+                break
         else:
             shock_mngr.loser_loop()
             
-        main_data.append_data_row(data_row)
+        main_data.save_and_flush_data()
         trial += 1
 
     pygame.quit()
