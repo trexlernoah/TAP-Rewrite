@@ -108,11 +108,15 @@ class shock_meter_mngr():
         key_pressed = None
 
         data_row = self.data.current_data_row
+        error_flag1 = False
+        error_flag2 = False
 
         while True:
             current_time = pygame.time.get_ticks()
+            
 
-            if current_time >= timer_start + 4000 and time_held == 0:
+            if current_time >= timer_start + 4000 and time_held == 0 and not error_flag1:
+                error_flag1 = True
                 self.render("YOU MUST PRESS A SHOCK BUTTON", self.subsurf)
                 self.data.current_error.add_error(ErrorMessage.WAIT_TO_SHOCK)
 
@@ -126,7 +130,8 @@ class shock_meter_mngr():
                         self.draw_meter(event.key)
                         time_held = current_time
                 elif event.type == pygame.TEXTINPUT and event.text == key_pressed: # hold
-                    if current_time > time_held + 7000:
+                    if current_time > time_held + 7000 and not error_flag2:
+                        error_flag2 = True
                         self.render("YOU ARE DONE SHOCKING! PLEASE RELEASE SHOCK BUTTON", self.subsurf)
                         self.data.current_error.add_error(ErrorMessage.SHOCK_TOO_LONG)
                 elif event.type == pygame.KEYUP and event.unicode == key_pressed: # end

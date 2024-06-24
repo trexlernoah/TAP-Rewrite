@@ -32,13 +32,14 @@ class DataRow(object):
     def get_row(self):
         return self.trial, self.wl, self.shock_intensity, self.shock_duration, self.reaction_time
 
-class Error(object):
+class ErrorBox(object):
     def __init__(self, trial: int):
         self.trial = trial
         self.errors = []
     
     def add_error(self, error: ErrorMessage):
         self.errors.append(error)
+        print("Adding error %s" % error)
 
 class Data(object):
     ''' Main data object '''
@@ -62,14 +63,14 @@ class Data(object):
         self.save_and_flush_error()
 
     def generate_new_error(self, trial: int):
-        self.current_error = Error(trial)
+        self.current_error = ErrorBox(trial)
     
     def save_and_flush_error(self):
         self.append_error(self.current_error)
         self.generate_new_error(self.current_error.trial + 1)
     
-    def append_error(self, error: Error):
-        self.errors.append(error)
+    def append_error(self, errorBox: ErrorBox):
+        self.errors.append(errorBox)
         print(self.errors)
 
     def generate_new_data_row(self, trial: int):
@@ -95,12 +96,12 @@ class Data(object):
         return pd.DataFrame(df)
     
     def get_error_data(self):
+        # Get dict of ErrorMessage enum keys with value set at 0
         error_data = {i.name: 0 for i in ErrorMessage}
-        for error_obj in self.errors:
-            for error in error_obj.errors:
-                if error_data[error]:
-                    error_data[error] += 1
-        print(error_data)
+        for error_box in self.errors:
+            for error in error_box.errors:
+                if error.name in error_data:
+                    error_data[error.name] += 1
         return error_data
 
     def save_data(self, filename: str):
@@ -110,7 +111,13 @@ class Data(object):
         data.to_csv(filename, sep='\t', encoding='utf-8', index=False)
 
         errors = self.get_error_data()
-        with open(filename, 'w') as file:
-            for error_line in errors:
-                print(error_line)
-                # file.write('%s: %s' % ())
+        with open(filename, 'a') as file:
+            for error, count in errors.items():
+                file.write('%s: %s time(s)\n' % (ErrorMessage[error].value, count))
+
+def test():
+    data = Data(0,0,0)
+    data.generate_new_data(1)
+    data.current_error.add_error(ErrorMessage.WAIT_TO_SHOCK)
+    data.save_and_flush_data()
+    data.save_data('test')

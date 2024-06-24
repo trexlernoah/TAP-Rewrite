@@ -32,14 +32,16 @@ class reaction_test_mngr():
         self.render("PRESS SPACEBAR", FG)
 
         timer_start = pygame.time.get_ticks()
+        error_flag = False
 
         while True:
             current_time = pygame.time.get_ticks()
             delta_time = current_time - timer_start
-
-            if delta_time >= 3000:
-                    self.render("PLEASE PRESS THE SPACEBAR", FG)
-                    self.data.current_error.add_error(ErrorMessage.WAIT_TOO_LONG)
+            
+            if delta_time >= 3000 and not error_flag:
+                error_flag = True
+                self.render("PLEASE PRESS THE SPACEBAR", FG)
+                self.data.current_error.add_error(ErrorMessage.WAIT_TO_START)
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     return True
