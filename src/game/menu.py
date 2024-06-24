@@ -1,4 +1,4 @@
-import threading, pickle, time, os
+import threading, pickle, os
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog, filedialog
 
@@ -51,13 +51,14 @@ class main_menu():
 
     def run_official(self, trials):
         if len(trials) == 0: return
-        data = main.main(trials)
+        data = main.main(self.state['subject_id'], trials)
         df = data.get_data_frame()
         # throw error here
         if df.empty: return
         print(df)
-        filename = time.strftime("%Y%m%d-%H%M%S")
-        data.save_data('%s/data/%s.dat' % (os.getcwd(), filename))
+        # filename = time.strftime("%Y%m%d-%H%M%S")
+        # data.save_data('%s/data/%s.dat' % (os.getcwd(), filename))
+        data.save_data('%s/data/%s.dat' % (os.getcwd(), self.state['subject_id']))
 
     def run_experiment(self):
         print(self.state['trials'][0])
@@ -98,7 +99,6 @@ class main_menu():
 
         subject_id_entry = tk.Entry(subject_threshold)
         subject_id_entry.grid(row=1, column=2)
-        id_num = subject_id_entry.get()
         # update_variable("experiment_id", str(id_num), "experiment")
         # update_variable("experiment_id", '001', "experiment")
 
@@ -169,12 +169,15 @@ class main_menu():
             t.start()
 
         def write_data():
-            global i
-            global j
+            # global i
+            # global j
             # update_variable("subject_low_threshold", str(i), "experiment")
-            print("Writing low shock of " + str(i) + " milliamps to file")
+            # print("Writing low shock of " + str(i) + " milliamps to file")
             # update_variable("subject_high_threshold", str(j), "experiment")
-            print("Writing high shock of " + str(j) + " milliamps to file")
+            # print("Writing high shock of " + str(j) + " milliamps to file")
+            id_num = subject_id_entry.get()
+            self.state['subject_id'] = str(id_num)
+            subject_threshold.destroy()
 
         start_lower_level = tk.Button(subject_threshold, relief='groove', text="Start", padx=10, pady=10, command=low_button_starter)
         start_lower_level.grid(row=3, column=1)
@@ -211,12 +214,13 @@ class main_menu():
         if number_of_trials != None:
             # for i in range(number_of_trials):
                 # append_variable("trial-"+str(i), number_of_trials, "experiment")
-            self.profile_parameters(trial_num=number_of_trials)
+            self.state['trial_count'] = number_of_trials
+            self.profile_parameters()
         else:
             number_of_trials=0
 
 
-    def profile_parameters(self, trial_num: int):
+    def profile_parameters(self, edit=False):
         def ok(wl, entries):
             trials = []
             for i in range(1, len(entries)):
@@ -231,7 +235,9 @@ class main_menu():
             self.state['trials'] = trials
             profile_parameters.destroy()
 
+        trial_num = self.state['trial_count']
         if not trial_num: return
+
         profile_parameters = tk.Toplevel(self.window)
         profile_parameters.geometry("600x400")
         profile_parameters.title("Setup Profile Parameters")
@@ -270,30 +276,61 @@ class main_menu():
         label3 = tk.Label(frame_buttons, text="Feedback")
         label3.grid(row=0, column=3, sticky='news')
 
+        def insert_text(idx: int, wl_var, shock, feedback):
+            trials = self.state['trials']
+            if len(trials) == 0: return
+    
+            trial: Trial = trials[idx]
+            print(trial.wl, trial.shock, trial.feedback)
+            wl_var.set(str(trial.wl))
+            if wl_var.get() == 'Lose':
+                shock.configure(state='normal')
+                feedback.configure(state='normal')
+                shock.delete(0,tk.END)
+                shock.insert(0,str(trial.shock))
+                feedback.delete(0,tk.END)
+                feedback.insert(0,str(trial.feedback))
+            else:
+                shock.configure(state='disabled')
+                feedback.configure(state='disabled')
+
+        row_entries = {}
+
         for i in range(1, rows):
             shock_entry = tk.Entry(frame_buttons)
             feedback_entry = tk.Entry(frame_buttons)
             def is_disabled(*args):
                 print(args)
-                if wl_var.get() == 'Lose':
-                    shock_entry.configure(state='normal')
-                    feedback_entry.configure(state='normal')
-                else:
-                    shock_entry.configure(state='disabled')
-                    feedback_entry.configure(state='disabled')
-
-            wl_var = tk.StringVar()
+                print(row_entries)
+                try:
+                    wl = row_entries.get(args[0])
+                    if wl[0].get() == 'Lose':
+                        wl[1].configure(state='normal')
+                        wl[2].configure(state='normal')
+                    else:
+                        wl[1].configure(state='disabled')
+                        wl[2].configure(state='disabled')
+                except:
+                    print('nope')
+            
+            row_name = 'wl'+str(i-1)
+            wl_var = tk.StringVar(name=row_name)
+            wl_var.trace_add('write', is_disabled)
             wl.append(wl_var)
 
             entries[i][0] = tk.Label(frame_buttons, text=("Trial %d" % i))
             entries[i][0].grid(row=i, column=0, sticky='news')
 
-            entries[i][1] = tk.OptionMenu(frame_buttons, wl_var, *('Win', 'Lose'), command=is_disabled)
+            entries[i][1] = tk.OptionMenu(frame_buttons, wl_var, *('Win', 'Lose'))
             entries[i][1].grid(row=i, column=1, sticky='news')
             entries[i][2] = shock_entry
             entries[i][2].grid(row=i, column=2, sticky='news')
             entries[i][3] = feedback_entry
             entries[i][3].grid(row=i, column=3, sticky='news')
+
+            row_entries[row_name] = [wl_var, shock_entry, feedback_entry]
+
+            if edit: insert_text(i-1, wl_var, shock_entry, feedback_entry)
 
         # Update buttons frames idle tasks to let tkinter calculate buttons sizes
         frame_buttons.update_idletasks()
@@ -391,7 +428,7 @@ class main_menu():
         # "Edit Current" dropdown menu options
         experiment_menu.add_cascade(label="Edit Current", menu=edit_current_menu)
         edit_current_menu.add_command(label="Instruction", command=lambda:self.create_new_instruction(self.state['instruction']))
-        edit_current_menu.add_command(label="Experiment")
+        edit_current_menu.add_command(label="Experiment", command=lambda:self.profile_parameters(edit=True))
         experiment_menu.add_separator()
 
         # "Save Experiment" dropdown menu option

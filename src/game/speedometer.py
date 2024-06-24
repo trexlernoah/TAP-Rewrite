@@ -87,10 +87,12 @@ class shock_meter_mngr():
         pygame.time.wait(delay)
 
     # Bad
-    def loser_loop(self):
+    def loser_loop(self, shock: int):
         self.render("YOU LOST! YOU GET A SHOCK", self.subsurf, delay=2400)
         # wat happens here
-        key = random.randint(48,57)
+        # key = random.randint(48,57)
+        if shock >= 10 or shock <= 0: shock = 10
+        key = 48 + shock
         self.draw_meter(key)
         pygame.display.flip()
         # send shock

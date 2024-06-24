@@ -28,12 +28,12 @@ def init():
 
     return (display, subsurf)
 
-def main(trials):
+def main(subject_id, trials: list[Trial]):
     if len(trials) <= 0: return
     display, subsurf = init()
-
+    print('subj id %s' % subject_id)
     # TODO replace with subj id and thresholds
-    main_data = Data(0,0,0)
+    main_data = Data(subject_id, 0, 0)
 
     react_mngr = reaction_test_mngr(subsurf, main_data)
     shock_mngr = shock_meter_mngr(display, subsurf, main_data)
@@ -56,7 +56,7 @@ def main(trials):
             if trial_data is None:
                 break
         else:
-            shock_mngr.loser_loop()
+            shock_mngr.loser_loop(int(trials[trial].shock))
             
         main_data.save_and_flush_data()
         trial += 1

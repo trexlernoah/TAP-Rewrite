@@ -9,6 +9,7 @@ BG = WHITE
 FG = BLACK
 
 initial_state = {'filename': "",
-         'instruction': "Enter instructions here",
-         'trial-count': 0,
-         'trials': []}
+                 'subject_id': "NA",
+                 'instruction': "Enter instructions here",
+                 'trial_count': 0,
+                 'trials': []}

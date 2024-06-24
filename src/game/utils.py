@@ -92,8 +92,10 @@ class Data(object):
             for j in range(i, i+5):
                 dr.append(self.data_rows[j])
             df = np.append(df, np.array([dr]), axis=0)
+        df = pd.DataFrame(df)
+        df.columns = self.data_headers
 
-        return pd.DataFrame(df)
+        return df
     
     def get_error_data(self):
         # Get dict of ErrorMessage enum keys with value set at 0
@@ -111,10 +113,16 @@ class Data(object):
         data.to_csv(filename, sep='\t', encoding='utf-8', index=False)
 
         errors = self.get_error_data()
-        with open(filename, 'a') as file:
+
+        with open(filename, 'r') as file:
+            save = file.read()
+        with open(filename, 'w') as file:
+            file.write('Subject: %s\n\n' % self.subject_id)
+            file.write(save)
+            file.write('\n\n')
             for error, count in errors.items():
                 file.write('%s: %s time(s)\n' % (ErrorMessage[error].value, count))
-
+            
 def test():
     data = Data(0,0,0)
     data.generate_new_data(1)
