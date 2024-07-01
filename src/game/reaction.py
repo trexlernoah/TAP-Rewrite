@@ -19,7 +19,7 @@ class reaction_test_mngr():
         pygame.time.wait(delay)
 
     def start_loop(self):
-        self.render("PRESS SPACEBAR TO START TEST", FG)
+        self.render("PRESS SPACEBAR TO START", FG)
 
         while True:
             for event in pygame.event.get():
@@ -47,7 +47,7 @@ class reaction_test_mngr():
                     return True
 
     def hold_loop(self):
-        self.render("PRESS SPACEBAR", FG)
+        # self.render("PRESS SPACEBAR", FG)
 
         timer_start = pygame.time.get_ticks()
         timer_release = timer_start + random.randint(2000, 4000)
@@ -70,6 +70,7 @@ class reaction_test_mngr():
                         self.data.current_error.add_error(ErrorMessage.RELEASE_TOO_SOON)
                         return False
                     else:
+                        self.render("", FG, 1000)
                         reaction_time = current_time - timer_release
                         print("ReactionTime: %d ms" % (reaction_time))
                         self.data.current_data_row.reaction_time = str(reaction_time)

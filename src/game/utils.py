@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 from enum import Enum
@@ -106,8 +107,16 @@ class Data(object):
                     error_data[error.name] += 1
         return error_data
 
+    # def get_file_path(self):
+    #     cwd = os.getcwd()
+    #     if os.path.isfile('%s/experiment.tap')
+
+
+
     def save_data(self, filename: str):
         if not filename: return
+
+        print(filename)
 
         data = self.get_data_frame()
         data.to_csv(filename, sep='\t', encoding='utf-8', index=False)

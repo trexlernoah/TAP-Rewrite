@@ -89,6 +89,13 @@ class main_menu():
         options_tab.add(timing_options, text="Timing")
 
     def set_subject_threshold(self):
+        if not self.state['trials']:
+            messagebox.showinfo(
+                title="Error",
+                message="You must open an experiment first."
+            )
+            return
+
         subject_threshold = tk.Toplevel(self.window)
         subject_threshold.geometry("300x200")
         subject_threshold.resizable(False, False)
@@ -222,24 +229,30 @@ class main_menu():
 
     def profile_parameters(self, edit=False):
         def ok(wl, entries):
-            trials = []
-            for i in range(1, len(entries)):
-                # res.append()
-                # self.state['trials']
-                print(wl[i-1].get())
-                print(entries[i][2].get())
-                print(entries[i][3].get())
-                trials.append(Trial(wl[i-1].get(), 
-                                    entries[i][2].get(), 
-                                    entries[i][3].get()))
-            self.state['trials'] = trials
-            profile_parameters.destroy()
+            try:
+                trials = []
+                for i in range(1, len(entries)):
+                    # res.append()
+                    # self.state['trials']
+                    print(wl[i-1].get())
+                    print(entries[i][2].get())
+                    print(entries[i][3].get())
+                    trials.append(Trial(wl[i-1].get(), 
+                                        entries[i][2].get(), 
+                                        entries[i][3].get()))
+                self.state['trials'] = trials
+                profile_parameters.destroy()
+            except:
+                messagebox.showinfo(
+                    title="Error",
+                    message="There was an error creating the trials."
+                )
 
         trial_num = self.state['trial_count']
         if not trial_num: return
 
         profile_parameters = tk.Toplevel(self.window)
-        profile_parameters.geometry("600x400")
+        profile_parameters.geometry("400x300")
         profile_parameters.title("Setup Profile Parameters")
 
         profile_parameters.grid_rowconfigure(0, weight=1)
@@ -268,6 +281,7 @@ class main_menu():
         # wl = tk.StringVar(self.window)
 
         wl = []
+        numbers = list(range(1,11))
 
         label1 = tk.Label(frame_buttons, text="Win or Lose")
         label1.grid(row=0, column=1, sticky='news')
@@ -286,8 +300,9 @@ class main_menu():
             if wl_var.get() == 'Lose':
                 shock.configure(state='normal')
                 feedback.configure(state='normal')
-                shock.delete(0,tk.END)
-                shock.insert(0,str(trial.shock))
+                # shock.set(numbers[0])
+                # shock.delete(0,tk.END)
+                # shock.insert(0,str(trial.shock))
                 feedback.delete(0,tk.END)
                 feedback.insert(0,str(trial.feedback))
             else:
@@ -297,7 +312,10 @@ class main_menu():
         row_entries = {}
 
         for i in range(1, rows):
-            shock_entry = tk.Entry(frame_buttons)
+            row_name = 'wl'+str(i-1)
+            shock_var = tk.StringVar() 
+            # shock_var.set(numbers[0])
+            shock_entry = tk.OptionMenu(frame_buttons, shock_var, *numbers)
             feedback_entry = tk.Entry(frame_buttons)
             def is_disabled(*args):
                 print(args)
@@ -313,7 +331,6 @@ class main_menu():
                 except:
                     print('nope')
             
-            row_name = 'wl'+str(i-1)
             wl_var = tk.StringVar(name=row_name)
             wl_var.trace_add('write', is_disabled)
             wl.append(wl_var)
@@ -338,8 +355,8 @@ class main_menu():
         # Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
         # first4columns_width = sum([entries[0][j].winfo_width() for j in range(0, 4)])
         # first5rows_height = sum([entries[i][0].winfo_height() for i in range(0, (rows if rows < 5 else 5))])
-        grid_frame.config(width=600 + vsb.winfo_width(),
-                            height=200)
+        height = entries[i][0].winfo_height() * 5
+        grid_frame.config(width=330+vsb.winfo_width(), height=height)
 
         # Set the canvas scrolling region
         canvas.config(scrollregion=canvas.bbox("all"))
