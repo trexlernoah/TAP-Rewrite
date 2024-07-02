@@ -228,17 +228,19 @@ class main_menu():
 
 
     def profile_parameters(self, edit=False):
-        def ok(wl, entries):
+        def ok(wl, shocks, entries):
             try:
                 trials = []
                 for i in range(1, len(entries)):
                     # res.append()
                     # self.state['trials']
+                    print('here')
+                    print(shocks[i-1].get())
                     print(wl[i-1].get())
-                    print(entries[i][2].get())
+                    print(shocks[i-1].get())
                     print(entries[i][3].get())
                     trials.append(Trial(wl[i-1].get(), 
-                                        entries[i][2].get(), 
+                                        shocks[i-1].get(), 
                                         entries[i][3].get()))
                 self.state['trials'] = trials
                 profile_parameters.destroy()
@@ -281,6 +283,7 @@ class main_menu():
         # wl = tk.StringVar(self.window)
 
         wl = []
+        shock_vars = []
         numbers = list(range(1,11))
 
         label1 = tk.Label(frame_buttons, text="Win or Lose")
@@ -334,6 +337,7 @@ class main_menu():
             wl_var = tk.StringVar(name=row_name)
             wl_var.trace_add('write', is_disabled)
             wl.append(wl_var)
+            shock_vars.append(shock_var)
 
             entries[i][0] = tk.Label(frame_buttons, text=("Trial %d" % i))
             entries[i][0].grid(row=i, column=0, sticky='news')
@@ -361,7 +365,7 @@ class main_menu():
         # Set the canvas scrolling region
         canvas.config(scrollregion=canvas.bbox("all"))
 
-        ok_btn = tk.Button(profile_parameters, text="Ok", command=lambda : ok(wl, entries))
+        ok_btn = tk.Button(profile_parameters, text="Ok", command=lambda : ok(wl, shock_vars, entries))
         ok_btn.grid(row=rows+1, column=0)
 
     def save_experiment(self):
