@@ -3,7 +3,10 @@ import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog, filedialog
 
 import main, constants
+from shock import DAQ
 from utils import *
+
+daq = DAQ()
 
 class main_menu():
     '''Tkinter menu class'''
@@ -106,41 +109,32 @@ class main_menu():
 
         subject_id_entry = tk.Entry(subject_threshold)
         subject_id_entry.grid(row=1, column=2)
-        # update_variable("experiment_id", str(id_num), "experiment")
-        # update_variable("experiment_id", '001', "experiment")
 
         set_lower_level = tk.Label(subject_threshold, text="Set Lower Level")
         set_lower_level.grid(row=2, column=1)
 
         # Just gonna leave the code for controlling the shock here
         # Boolean for stopping the shock function
-        low_running = False
-        high_running = False
-        i = 0.10
-        j = 0.15
+        # global low_stopped, low_mA, high_stopped, high_mA
+        low_stopped = False
+        high_stopped = False
+        low_mA = 0.10
+        high_mA = 0.15
 
         def start_low_shock():
-            global low_running
-            global i
-            low_running = False 
-            print("Starting lower threshold.")
-            # Increment the shock up from 0.10 by 0.05, with a limit of 4
-            # Numbers are in milliamps, in case not clear.
-            i = 0.10
-            while i <= 3 and not low_running:
-                if low_running:
+            nonlocal low_mA, low_stopped
+            while low_mA <= .50 and not low_stopped:
+                if low_stopped:
+                    print("Stopping low")
                     break
-                else:
-                    # analog_out(i, 2)
-                    i = i + 0.5
-                    print("Administered shock of " + str(i) + " milliamps.")
-
-            print("Returning shock of " + str(i) + " milliamps.")
-            return i
+                daq.test(low_mA, 1000)
+                low_mA = low_mA + 0.075
+                print("Administered shock of " + str(low_mA) + " milliamps.")
+            print("Returning shock of " + str(low_mA) + " milliamps.")
 
         def stop_low_shock():
-            global low_running
-            low_running = True
+            nonlocal low_stopped
+            low_stopped = True
             print("Stopping lower threshold.")
 
         def low_button_starter():
@@ -148,27 +142,20 @@ class main_menu():
             t.start()
 
         def start_high_shock():
-            global high_running
-            global j
-            high_running = False
+            nonlocal high_mA, high_stopped
             print("Starting higher threshold.")
-            # Increment the shock up from 0.10 by 0.05, with a limit of 4
-            # Numbers are in milliamps, in case not clear.
-            j = 0.15
-            while j <= 3 and not high_running:
-                if high_running:
+            while high_mA <= 1.00 and not high_stopped:
+                if high_stopped:
+                    print("Stopping high")
                     break
-                else:
-                    # analog_out(i, 2)
-                    j = j + 0.5
-                    print("Administered shock of " + str(j) + " milliamps.")
-
-            print("Returning shock of " + str(j) + " milliamps.")
-            return j
+                daq.test(high_mA, 1000)
+                high_mA = high_mA + 0.075
+                print("Administered shock of " + str(high_mA) + " milliamps.")
+            print("Returning shock of " + str(high_mA) + " milliamps.")
 
         def stop_high_shock():
-            global high_running
-            high_running = True 
+            nonlocal high_stopped
+            high_stopped = True
             print("Stopping higher threshold.")
 
         def high_button_starter():

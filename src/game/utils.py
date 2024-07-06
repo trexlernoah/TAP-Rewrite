@@ -1,4 +1,4 @@
-import os
+import threading
 import pandas as pd
 import numpy as np
 from enum import Enum
@@ -138,3 +138,14 @@ def test():
     data.current_error.add_error(ErrorMessage.WAIT_TO_SHOCK)
     data.save_and_flush_data()
     data.save_data('test')
+
+class StoppableThread(threading.Thread):
+    def __init__(self,  *args, **kwargs):
+        super(StoppableThread, self).__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
