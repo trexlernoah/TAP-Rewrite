@@ -1,13 +1,9 @@
-'''
-TODO
--refactor reaction.py to accept a shared surface on global display 
-'''
-
 import pygame
 
-from reaction import reaction_test_mngr
-from speedometer import shock_meter_mngr
+from reaction import ReactionTest
+from speedometer import ShockMeter
 
+from drawer import Drawer
 from utils import *
 
 def init():
@@ -28,20 +24,20 @@ def init():
 
     return (display, subsurf)
 
-def main(subject_id, trials: list[Trial]):
+def play(subject_id, trials: list[Trial]):
     if len(trials) <= 0: return
     display, subsurf = init()
-    print('subj id %s' % subject_id)
     # TODO replace with subj id and thresholds
     main_data = Data(subject_id, 0, 0)
 
-    react_mngr = reaction_test_mngr(subsurf, main_data)
-    shock_mngr = shock_meter_mngr(display, subsurf, main_data)
+    drawer = Drawer(display, subsurf)
+    react_mngr = ReactionTest(drawer, main_data)
+    shock_mngr = ShockMeter(drawer, main_data)
 
     trial = 0
     main_data.generate_new_data(trial+1)
     while trial < len(trials):
-        shock_mngr.draw_circles() 
+        drawer.reset_meter()
 
         reaction_data = react_mngr.run(trial == 0)
         if not reaction_data:
@@ -52,11 +48,11 @@ def main(subject_id, trials: list[Trial]):
         main_data.current_data_row.wl = ('W' if wl else 'L')
 
         if wl:
-            trial_data = shock_mngr.shock_loop()
+            trial_data = shock_mngr.win_loop()
             if trial_data is None:
                 break
         else:
-            shock_mngr.loser_loop(int(trials[trial].shock))
+            shock_mngr.lose_loop(int(trials[trial].shock))
             
         main_data.save_and_flush_data()
         trial += 1
@@ -64,6 +60,3 @@ def main(subject_id, trials: list[Trial]):
     pygame.quit()
 
     return main_data
-
-if __name__ == "__main__":
-    main()

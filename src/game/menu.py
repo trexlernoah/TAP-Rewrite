@@ -2,7 +2,7 @@ import threading, pickle, os
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog, filedialog
 
-import main, constants
+import game.game as game, constants
 from shock import DAQ
 from utils import *
 
@@ -54,7 +54,7 @@ class main_menu():
 
     def run_official(self, trials):
         if len(trials) == 0: return
-        data = main.main(self.state['subject_id'], trials)
+        data = game.play(self.state['subject_id'], trials)
         df = data.get_data_frame()
         # throw error here
         if df.empty: return
@@ -163,12 +163,8 @@ class main_menu():
             t.start()
 
         def write_data():
-            # global i
-            # global j
-            # update_variable("subject_low_threshold", str(i), "experiment")
-            # print("Writing low shock of " + str(i) + " milliamps to file")
-            # update_variable("subject_high_threshold", str(j), "experiment")
-            # print("Writing high shock of " + str(j) + " milliamps to file")
+            nonlocal low_mA, high_mA
+            # TODO apply low/high shocks to threshold
             id_num = subject_id_entry.get()
             self.state['subject_id'] = str(id_num)
             subject_threshold.destroy()
@@ -219,13 +215,6 @@ class main_menu():
             try:
                 trials = []
                 for i in range(1, len(entries)):
-                    # res.append()
-                    # self.state['trials']
-                    print('here')
-                    print(shocks[i-1].get())
-                    print(wl[i-1].get())
-                    print(shocks[i-1].get())
-                    print(entries[i][3].get())
                     trials.append(Trial(wl[i-1].get(), 
                                         shocks[i-1].get(), 
                                         entries[i][3].get()))

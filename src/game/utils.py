@@ -107,12 +107,6 @@ class Data(object):
                     error_data[error.name] += 1
         return error_data
 
-    # def get_file_path(self):
-    #     cwd = os.getcwd()
-    #     if os.path.isfile('%s/experiment.tap')
-
-
-
     def save_data(self, filename: str):
         if not filename: return
 
@@ -131,13 +125,6 @@ class Data(object):
             file.write('\n\n')
             for error, count in errors.items():
                 file.write('%s: %s time(s)\n' % (ErrorMessage[error].value, count))
-            
-def test():
-    data = Data(0,0,0)
-    data.generate_new_data(1)
-    data.current_error.add_error(ErrorMessage.WAIT_TO_SHOCK)
-    data.save_and_flush_data()
-    data.save_data('test')
 
 class StoppableThread(threading.Thread):
     def __init__(self,  *args, **kwargs):
