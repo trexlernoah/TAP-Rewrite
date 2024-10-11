@@ -2,11 +2,12 @@ import threading, pickle, os
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog, filedialog
 
-import game.game as game, constants
-from shock import DAQ
+import constants
+import game
+# from daq import DAQ
 from utils import *
 
-daq = DAQ()
+# daq = DAQ()
 
 class main_menu():
     '''Tkinter menu class'''
@@ -38,6 +39,7 @@ class main_menu():
 
         instruction_text = tk.Text(new_instruction)
         btn_frame = tk.Frame(new_instruction, bd=2)
+
         ok_btn = tk.Button(btn_frame, text="Ok", command=ok)
         cancel_btn = tk.Button(btn_frame, text="Cancel", command=cancel)
         clear_btn = tk.Button(btn_frame, text="Clear Text", command=clear)
@@ -58,13 +60,11 @@ class main_menu():
         df = data.get_data_frame()
         # throw error here
         if df.empty: return
-        print(df)
         # filename = time.strftime("%Y%m%d-%H%M%S")
         # data.save_data('%s/data/%s.dat' % (os.getcwd(), filename))
         data.save_data('%s/data/%s.dat' % (os.getcwd(), self.state['subject_id']))
 
     def run_experiment(self):
-        print(self.state['trials'][0])
         if len(self.state['trials']) <= 0:
             messagebox.showinfo(
                 title="Warning",
@@ -127,7 +127,7 @@ class main_menu():
                 if low_stopped:
                     print("Stopping low")
                     break
-                daq.test(low_mA, 1000)
+                # daq.test(low_mA, 1000)
                 low_mA = low_mA + 0.075
                 print("Administered shock of " + str(low_mA) + " milliamps.")
             print("Returning shock of " + str(low_mA) + " milliamps.")
@@ -148,7 +148,7 @@ class main_menu():
                 if high_stopped:
                     print("Stopping high")
                     break
-                daq.test(high_mA, 1000)
+                # daq.test(high_mA, 1000)
                 high_mA = high_mA + 0.075
                 print("Administered shock of " + str(high_mA) + " milliamps.")
             print("Returning shock of " + str(high_mA) + " milliamps.")
@@ -254,10 +254,8 @@ class main_menu():
 
         rows = trial_num + 1
         columns = 4
-        print(rows, columns)
-        entries = [[tk.Entry() for j in range(columns)] for i in range(rows)]
-        # wl = tk.StringVar(self.window)
 
+        entries = [[tk.Entry() for j in range(columns)] for i in range(rows)]
         wl = []
         shock_vars = []
         numbers = list(range(1,11))
@@ -269,12 +267,11 @@ class main_menu():
         label3 = tk.Label(frame_buttons, text="Feedback")
         label3.grid(row=0, column=3, sticky='news')
 
-        def insert_text(idx: int, wl_var, shock, feedback):
+        def insert_text(idx: int, wl_var: tk.StringVar, shock: tk.OptionMenu, feedback: tk.Entry):
             trials = self.state['trials']
             if len(trials) == 0: return
     
             trial: Trial = trials[idx]
-            print(trial.wl, trial.shock, trial.feedback)
             wl_var.set(str(trial.wl))
             if wl_var.get() == 'Lose':
                 shock.configure(state='normal')
@@ -297,8 +294,6 @@ class main_menu():
             shock_entry = tk.OptionMenu(frame_buttons, shock_var, *numbers)
             feedback_entry = tk.Entry(frame_buttons)
             def is_disabled(*args):
-                print(args)
-                print(row_entries)
                 try:
                     wl = row_entries.get(args[0])
                     if wl[0].get() == 'Lose':
@@ -308,7 +303,7 @@ class main_menu():
                         wl[1].configure(state='disabled')
                         wl[2].configure(state='disabled')
                 except:
-                    print('nope')
+                    print('Error disabling row')
             
             wl_var = tk.StringVar(name=row_name)
             wl_var.trace_add('write', is_disabled)
@@ -364,9 +359,9 @@ class main_menu():
             )
 
     def open_experiment(self):
-        files = [('TAP files', '*.tap'),
+        filetypes = [('TAP files', '*.tap'),
                  ('All files', '*.*')]
-        file = filedialog.askopenfile(mode="rb", filetypes=files, defaultextension='.tap')
+        file = filedialog.askopenfile(mode="rb", filetypes=filetypes, defaultextension='.tap')
         if file is None:
             return
         try:
@@ -381,8 +376,6 @@ class main_menu():
     def edit_experiment(self): 
         # if self.state[]
         print("")
-
-### Window Management
 
     def init_main_window(self):
         

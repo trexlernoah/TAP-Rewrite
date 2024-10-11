@@ -71,7 +71,7 @@ class Drawer():
         pygame.draw.arc(self.surface, RED, rect, startRad, endRad, 95)
         pygame.display.flip()
 
-    def erase_meter(self, _key):
+    def reset_meter(self, _key):
         key = _key - 48
         if key == 0:
             key = 10

@@ -1,7 +1,7 @@
 import pygame
 
 from reaction import ReactionTest
-from speedometer import ShockMeter
+from shock import ShockMeter
 
 from drawer import Drawer
 from utils import *

@@ -40,7 +40,6 @@ class ErrorBox(object):
     
     def add_error(self, error: ErrorMessage):
         self.errors.append(error)
-        print("Adding error %s" % error)
 
 class Data(object):
     ''' Main data object '''
