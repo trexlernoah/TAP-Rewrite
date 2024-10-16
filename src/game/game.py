@@ -6,6 +6,7 @@ from shock import ShockMeter
 from drawer import Drawer
 from utils import *
 
+
 def init():
     pygame.init()
 
@@ -24,8 +25,10 @@ def init():
 
     return (display, subsurf)
 
+
 def play(subject_id, trials: list[Trial]):
-    if len(trials) <= 0: return
+    if len(trials) <= 0:
+        return
     display, subsurf = init()
     # TODO replace with subj id and thresholds
     main_data = Data(subject_id, 0, 0)
@@ -35,7 +38,7 @@ def play(subject_id, trials: list[Trial]):
     shock_mngr = ShockMeter(drawer, main_data)
 
     trial = 0
-    main_data.generate_new_data(trial+1)
+    main_data.generate_new_data(trial + 1)
     while trial < len(trials):
         drawer.reset_meter()
 
@@ -44,8 +47,8 @@ def play(subject_id, trials: list[Trial]):
             break
 
         # Change this
-        wl = trials[trial].wl == 'Win'
-        main_data.current_data_row.wl = ('W' if wl else 'L')
+        wl = trials[trial].wl == "Win"
+        main_data.current_data_row.wl = "W" if wl else "L"
 
         if wl:
             trial_data = shock_mngr.win_loop()
@@ -53,7 +56,7 @@ def play(subject_id, trials: list[Trial]):
                 break
         else:
             shock_mngr.lose_loop(int(trials[trial].shock))
-            
+
         main_data.save_and_flush_data()
         trial += 1
 

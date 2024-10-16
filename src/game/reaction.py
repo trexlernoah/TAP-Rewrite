@@ -1,10 +1,12 @@
-import pygame, random
+import pygame as pygame
+import random
 
-from constants import *
-from utils import *
+import constants
+from utils import GameState, ErrorMessage, Data
 from drawer import Drawer
 
-class ReactionTest():
+
+class ReactionTest:
     def __init__(self, drawer: Drawer, data: Data):
         self.drawer = drawer
         self.data = data
@@ -28,7 +30,7 @@ class ReactionTest():
         while True:
             current_time = pygame.time.get_ticks()
             delta_time = current_time - timer_start
-            
+
             if delta_time >= 3000 and not error_flag:
                 error_flag = True
                 self.drawer.render_text("PLEASE PRESS THE SPACEBAR")
@@ -45,10 +47,10 @@ class ReactionTest():
             current_time = pygame.time.get_ticks()
 
             if current_time >= timer_release:
-                self.drawer.render_text("RELEASE", RED)
+                self.drawer.render_text("RELEASE", constants.RED)
 
             for event in pygame.event.get():
-                if event.type == pygame.TEXTINPUT and event.text == ' ':
+                if event.type == pygame.TEXTINPUT and event.text == " ":
                     if current_time > timer_release + 1000:
                         self.drawer.render_text("YOU WAITED TOO LONG", 3700)
                         self.data.current_error.add_error(ErrorMessage.WAIT_TOO_LONG)
@@ -59,19 +61,20 @@ class ReactionTest():
                         self.data.current_error.add_error(ErrorMessage.RELEASE_TOO_SOON)
                         return False
                     else:
-                        self.drawer.render_text("", FG, 1000)
+                        self.drawer.render_text("", constants.FG, 1000)
                         reaction_time = current_time - timer_release
                         self.data.current_data_row.reaction_time = str(reaction_time)
                         return True
             pygame.display.flip()
-
 
     def run(self, first_trial: bool):
         current_state = GameState.START if first_trial else GameState.READY
 
         while True:
             if current_state == GameState.START:
-                current_state = GameState.READY if self.start_loop() else GameState.START
+                current_state = (
+                    GameState.READY if self.start_loop() else GameState.START
+                )
             elif current_state == GameState.READY:
                 current_state = GameState.HOLD if self.ready_loop() else GameState.READY
             elif current_state == GameState.HOLD:

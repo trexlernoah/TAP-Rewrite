@@ -1,16 +1,17 @@
-import threading, pickle, os
+import os
+import pickle
+import threading
 import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog, filedialog
+from tkinter import filedialog, messagebox, simpledialog, ttk
 
-import constants
 import game
-# from daq import DAQ
-from utils import *
+import constants
+from utils import Trial
 
-# daq = DAQ()
 
-class main_menu():
-    '''Tkinter menu class'''
+class main_menu:
+    """Tkinter menu class"""
+
     def __init__(self) -> None:
         window = tk.Tk()
         window.title("TAP Python Edition")
@@ -19,14 +20,16 @@ class main_menu():
 
         self.window = window
         self.state = constants.initial_state
-    
+
     def create_new_instruction(self, instruction="Enter instructions here"):
         def ok():
-            self.state['instruction'] = instruction_text.get("1.0", tk.END)
-            print(self.state['instruction'])
+            self.state["instruction"] = instruction_text.get("1.0", tk.END)
+            print(self.state["instruction"])
             new_instruction.destroy()
+
         def cancel():
             new_instruction.destroy()
+
         def clear():
             instruction_text.delete("1.0", tk.END)
 
@@ -53,30 +56,30 @@ class main_menu():
 
         instruction_text.insert("1.0", instruction)
 
-
     def run_official(self, trials):
-        if len(trials) == 0: return
-        data = game.play(self.state['subject_id'], trials)
+        if len(trials) == 0:
+            return
+        data = game.play(self.state["subject_id"], trials)
         df = data.get_data_frame()
         # throw error here
-        if df.empty: return
+        if df.empty:
+            return
         # filename = time.strftime("%Y%m%d-%H%M%S")
         # data.save_data('%s/data/%s.dat' % (os.getcwd(), filename))
-        data.save_data('%s/data/%s.dat' % (os.getcwd(), self.state['subject_id']))
+        data.save_data("%s/data/%s.dat" % (os.getcwd(), self.state["subject_id"]))
 
     def run_experiment(self):
-        if len(self.state['trials']) <= 0:
+        if len(self.state["trials"]) <= 0:
             messagebox.showinfo(
-                title="Warning",
-                message="You must set the number of trials!"
+                title="Warning", message="You must set the number of trials!"
             )
             return
-        self.run_official(self.state['trials'])
+        self.run_official(self.state["trials"])
 
     def show_about_info(self):
         messagebox.showinfo(
             title="About",
-            message="This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module."
+            message="This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module.",
         )
 
     def set_options(self):
@@ -92,10 +95,9 @@ class main_menu():
         options_tab.add(timing_options, text="Timing")
 
     def set_subject_threshold(self):
-        if not self.state['trials']:
+        if not self.state["trials"]:
             messagebox.showinfo(
-                title="Error",
-                message="You must open an experiment first."
+                title="Error", message="You must open an experiment first."
             )
             return
 
@@ -123,7 +125,7 @@ class main_menu():
 
         def start_low_shock():
             nonlocal low_mA, low_stopped
-            while low_mA <= .50 and not low_stopped:
+            while low_mA <= 0.50 and not low_stopped:
                 if low_stopped:
                     print("Stopping low")
                     break
@@ -166,19 +168,47 @@ class main_menu():
             nonlocal low_mA, high_mA
             # TODO apply low/high shocks to threshold
             id_num = subject_id_entry.get()
-            self.state['subject_id'] = str(id_num)
+            self.state["subject_id"] = str(id_num)
             subject_threshold.destroy()
 
-        start_lower_level = tk.Button(subject_threshold, relief='groove', text="Start", padx=10, pady=10, command=low_button_starter)
+        start_lower_level = tk.Button(
+            subject_threshold,
+            relief="groove",
+            text="Start",
+            padx=10,
+            pady=10,
+            command=low_button_starter,
+        )
         start_lower_level.grid(row=3, column=1)
-        stop_lower_level = tk.Button(subject_threshold, relief='groove', text="Stop", padx=10, pady=10,command=stop_low_shock)
+        stop_lower_level = tk.Button(
+            subject_threshold,
+            relief="groove",
+            text="Stop",
+            padx=10,
+            pady=10,
+            command=stop_low_shock,
+        )
         stop_lower_level.grid(row=4, column=1)
-    
+
         set_higher_level = tk.Label(subject_threshold, text="Set Higher Level")
         set_higher_level.grid(row=2, column=2)
-        start_higher_level= tk.Button(subject_threshold, relief='groove', text="Start", padx=10, pady=10,command=high_button_starter)
+        start_higher_level = tk.Button(
+            subject_threshold,
+            relief="groove",
+            text="Start",
+            padx=10,
+            pady=10,
+            command=high_button_starter,
+        )
         start_higher_level.grid(row=3, column=2)
-        stop_higher_level= tk.Button(subject_threshold, relief='groove', text="Stop", padx=10, pady=10,command=stop_high_shock)
+        stop_higher_level = tk.Button(
+            subject_threshold,
+            relief="groove",
+            text="Stop",
+            padx=10,
+            pady=10,
+            command=stop_high_shock,
+        )
         stop_higher_level.grid(row=4, column=2)
 
         spacer1 = tk.Label(subject_threshold, text="")
@@ -186,143 +216,158 @@ class main_menu():
 
         # Fix
         # Return values of lower and higher number (just a matter of using the append() function and returning the low and high functions)
-        ok = tk.Button(subject_threshold, relief='groove', text="OK", command=write_data)
+        ok = tk.Button(
+            subject_threshold, relief="groove", text="OK", command=write_data
+        )
         ok.grid(row=6, column=1)
 
-        cancel = tk.Button(subject_threshold, relief='groove', text="Cancel", command=subject_threshold.destroy)
+        cancel = tk.Button(
+            subject_threshold,
+            relief="groove",
+            text="Cancel",
+            command=subject_threshold.destroy,
+        )
         cancel.grid(row=6, column=2)
 
     def profile_setup(self):
-        number_of_trials = simpledialog.askinteger("Profile Setup", "Number of Trials: ")
-        
+        number_of_trials = simpledialog.askinteger(
+            "Profile Setup", "Number of Trials: "
+        )
+
         # Fix
         # Checkbox for "Enable RCAP"
         # rcap_checkbox = tk.Checkbutton(window, text='Enable RCAP',variable=var1, onvalue=1, offvalue=0, command=print_selection)
-        # rcap_checkbox.grid(row=1, column=4) 
+        # rcap_checkbox.grid(row=1, column=4)
         # self.state['trial-count'] = number_of_trials if not None else 0
         # update_variable("trials", number_of_trials, "experiment")
-        if number_of_trials != None:
+        if number_of_trials is not None:
             # for i in range(number_of_trials):
-                # append_variable("trial-"+str(i), number_of_trials, "experiment")
-            self.state['trial_count'] = number_of_trials
+            # append_variable("trial-"+str(i), number_of_trials, "experiment")
+            self.state["trial_count"] = number_of_trials
             self.profile_parameters()
         else:
-            number_of_trials=0
-
+            number_of_trials = 0
 
     def profile_parameters(self, edit=False):
         def ok(wl, shocks, entries):
             try:
                 trials = []
                 for i in range(1, len(entries)):
-                    trials.append(Trial(wl[i-1].get(), 
-                                        shocks[i-1].get(), 
-                                        entries[i][3].get()))
-                self.state['trials'] = trials
+                    trials.append(
+                        Trial(wl[i - 1].get(), shocks[i - 1].get(), entries[i][3].get())
+                    )
+                self.state["trials"] = trials
                 profile_parameters.destroy()
             except:
                 messagebox.showinfo(
-                    title="Error",
-                    message="There was an error creating the trials."
+                    title="Error", message="There was an error creating the trials."
                 )
 
-        trial_num = self.state['trial_count']
-        if not trial_num: return
-
-        profile_parameters = tk.Toplevel(self.window)
-        profile_parameters.geometry("400x300")
-        profile_parameters.title("Setup Profile Parameters")
-
-        profile_parameters.grid_rowconfigure(0, weight=1)
-        profile_parameters.columnconfigure(0, weight=1)
-
-        grid_frame = tk.Frame(profile_parameters)
-        grid_frame.grid(row=0, column=0, pady=(5,0), sticky="nw")
-        grid_frame.grid_rowconfigure(0, weight=1)
-        grid_frame.grid_columnconfigure(0, weight=1)
-        grid_frame.grid_propagate(False)
-
-        canvas = tk.Canvas(grid_frame, bg="white")
-        canvas.grid(row=0, column=0, sticky="news")
-
-        vsb = tk.Scrollbar(grid_frame, orient="vertical", command=canvas.yview)
-        vsb.grid(row=0, column=1, sticky='ns')
-        canvas.configure(yscrollcommand=vsb.set)
-
-        frame_buttons = tk.Frame(canvas)
-        canvas.create_window((0, 0), window=frame_buttons, anchor='nw')
+        trial_num = self.state["trial_count"]
+        if not trial_num:
+            return
 
         rows = trial_num + 1
         columns = 4
 
+        profile_parameters = tk.Toplevel(self.window)
+        profile_parameters.geometry("800x600")
+        profile_parameters.title("Setup Profile Parameters")
+        profile_parameters.resizable(width=True, height=True)
+        profile_parameters.rowconfigure(0, weight=1)
+        profile_parameters.columnconfigure(0, weight=1)
+
+        # profile_parameters.grid_rowconfigure(0, weight=1)
+        # profile_parameters.columnconfigure(0, weight=1)
+
+        grid_frame = tk.Frame(profile_parameters)
+        grid_frame.grid(row=0, column=0, pady=(10, 0), sticky="news", columnspan=2)
+        grid_frame.grid_rowconfigure(0, weight=1)
+        grid_frame.grid_columnconfigure(0, weight=1)
+        # grid_frame.grid_propagate(False)
+
+        canvas = tk.Canvas(grid_frame, bg="white")
+        canvas.grid(row=rows, column=0, sticky="news")
+
+        vsb = tk.Scrollbar(grid_frame, orient="vertical", command=canvas.yview)
+        vsb.grid(row=0, column=1, sticky="ns")
+        canvas.configure(yscrollcommand=vsb.set)
+
+        frame_buttons = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=frame_buttons, anchor="nw")
+
         entries = [[tk.Entry() for j in range(columns)] for i in range(rows)]
         wl = []
         shock_vars = []
-        numbers = list(range(1,11))
+        feedback_vars = []
+        numbers = list(range(1, 11))
 
         label1 = tk.Label(frame_buttons, text="Win or Lose")
-        label1.grid(row=0, column=1, sticky='news')
+        label1.grid(row=0, column=1, sticky="news")
         label2 = tk.Label(frame_buttons, text="Shock")
-        label2.grid(row=0, column=2, sticky='news')
+        label2.grid(row=0, column=2, sticky="news")
         label3 = tk.Label(frame_buttons, text="Feedback")
-        label3.grid(row=0, column=3, sticky='news')
+        label3.grid(row=0, column=3, sticky="news")
 
-        def insert_text(idx: int, wl_var: tk.StringVar, shock: tk.OptionMenu, feedback: tk.Entry):
-            trials = self.state['trials']
-            if len(trials) == 0: return
-    
+        def insert_text(
+            idx: int, wl_var: tk.StringVar, shock: tk.OptionMenu, feedback: tk.Entry
+        ):
+            trials = self.state["trials"]
+            if len(trials) == 0:
+                return
+
             trial: Trial = trials[idx]
             wl_var.set(str(trial.wl))
-            if wl_var.get() == 'Lose':
-                shock.configure(state='normal')
-                feedback.configure(state='normal')
-                # shock.set(numbers[0])
-                # shock.delete(0,tk.END)
-                # shock.insert(0,str(trial.shock))
-                feedback.delete(0,tk.END)
-                feedback.insert(0,str(trial.feedback))
+            if wl_var.get() == "Lose":
+                shock.configure(state="normal")
+                feedback.configure(state="normal")
+                feedback.delete(0, tk.END)
+                feedback.insert(0, str(trial.feedback))
             else:
-                shock.configure(state='disabled')
-                feedback.configure(state='disabled')
+                shock.configure(state="disabled")
+                feedback.configure(state="disabled")
 
         row_entries = {}
 
         for i in range(1, rows):
-            row_name = 'wl'+str(i-1)
-            shock_var = tk.StringVar() 
-            # shock_var.set(numbers[0])
+            row_name = "wl" + str(i - 1)
+            shock_var = tk.StringVar()
+            feedback_var = tk.StringVar()
             shock_entry = tk.OptionMenu(frame_buttons, shock_var, *numbers)
-            feedback_entry = tk.Entry(frame_buttons)
+            feedback_entry = tk.OptionMenu(frame_buttons, feedback_var, *numbers)
+
             def is_disabled(*args):
                 try:
                     wl = row_entries.get(args[0])
-                    if wl[0].get() == 'Lose':
-                        wl[1].configure(state='normal')
-                        wl[2].configure(state='normal')
+                    if wl[0].get() == "Lose":
+                        wl[1].configure(state="normal")
+                        wl[2].configure(state="normal")
                     else:
-                        wl[1].configure(state='disabled')
-                        wl[2].configure(state='disabled')
+                        wl[1].configure(state="disabled")
+                        wl[2].configure(state="disabled")
                 except:
-                    print('Error disabling row')
-            
+                    print("Error disabling row")
+
             wl_var = tk.StringVar(name=row_name)
-            wl_var.trace_add('write', is_disabled)
+            wl_var.trace_add("write", is_disabled)
             wl.append(wl_var)
             shock_vars.append(shock_var)
+            feedback_vars.append(feedback_var)
 
             entries[i][0] = tk.Label(frame_buttons, text=("Trial %d" % i))
-            entries[i][0].grid(row=i, column=0, sticky='news')
+            entries[i][0].grid(row=i, column=0, sticky="news")
 
-            entries[i][1] = tk.OptionMenu(frame_buttons, wl_var, *('Win', 'Lose'))
-            entries[i][1].grid(row=i, column=1, sticky='news')
+            entries[i][1] = tk.OptionMenu(frame_buttons, wl_var, *("Win", "Lose"))
+            entries[i][1].grid(row=i, column=1, sticky="news")
             entries[i][2] = shock_entry
-            entries[i][2].grid(row=i, column=2, sticky='news')
+            entries[i][2].grid(row=i, column=2, sticky="news")
             entries[i][3] = feedback_entry
-            entries[i][3].grid(row=i, column=3, sticky='news')
+            entries[i][3].grid(row=i, column=3, sticky="news")
 
             row_entries[row_name] = [wl_var, shock_entry, feedback_entry]
 
-            if edit: insert_text(i-1, wl_var, shock_entry, feedback_entry)
+            if edit:
+                insert_text(i - 1, wl_var, shock_entry, feedback_entry)
 
         # Update buttons frames idle tasks to let tkinter calculate buttons sizes
         frame_buttons.update_idletasks()
@@ -331,54 +376,55 @@ class main_menu():
         # first4columns_width = sum([entries[0][j].winfo_width() for j in range(0, 4)])
         # first5rows_height = sum([entries[i][0].winfo_height() for i in range(0, (rows if rows < 5 else 5))])
         height = entries[i][0].winfo_height() * 5
-        grid_frame.config(width=330+vsb.winfo_width(), height=height)
+        grid_frame.config(width=330 + vsb.winfo_width(), height=height)
 
         # Set the canvas scrolling region
         canvas.config(scrollregion=canvas.bbox("all"))
 
-        ok_btn = tk.Button(profile_parameters, text="Ok", command=lambda : ok(wl, shock_vars, entries))
-        ok_btn.grid(row=rows+1, column=0)
+        ok_btn = tk.Button(
+            profile_parameters, text="Ok", command=lambda: ok(wl, shock_vars, entries)
+        )
+        ok_btn.grid(row=rows + 1, column=0)
 
     def save_experiment(self):
-        files = [('TAP files', '*.tap'),
-                 ('All files', '*.*')]
-        file = filedialog.asksaveasfile(mode="wb", 
-                                        filetypes=files, 
-                                        initialfile=self.state['filename'], 
-                                        defaultextension='.tap')
+        files = [("TAP files", "*.tap"), ("All files", "*.*")]
+        file = filedialog.asksaveasfile(
+            mode="wb",
+            filetypes=files,
+            initialfile=self.state["filename"],
+            defaultextension=".tap",
+        )
         if file is None:
             return
         try:
-            self.state['filename'] = file.name
+            self.state["filename"] = file.name
             pickle.dump(self.state, file)
             file.close()
         except:
             messagebox.showinfo(
-                title="Error",
-                message="There was an error saving the file."
+                title="Error", message="There was an error saving the file."
             )
 
     def open_experiment(self):
-        filetypes = [('TAP files', '*.tap'),
-                 ('All files', '*.*')]
-        file = filedialog.askopenfile(mode="rb", filetypes=filetypes, defaultextension='.tap')
+        filetypes = [("TAP files", "*.tap"), ("All files", "*.*")]
+        file = filedialog.askopenfile(
+            mode="rb", filetypes=filetypes, defaultextension=".tap"
+        )
         if file is None:
             return
         try:
             self.state = pickle.load(file)
-            self.state['filename'] = file.name
+            self.state["filename"] = file.name
         except:
             messagebox.showinfo(
-                title="Error",
-                message="There was an error opening the file."
-            )       
-    
-    def edit_experiment(self): 
+                title="Error", message="There was an error opening the file."
+            )
+
+    def edit_experiment(self):
         # if self.state[]
         print("")
 
     def init_main_window(self):
-        
         # Cofigure sizing for rows and columns
         self.window.rowconfigure(1, minsize=800, weight=1)
         self.window.columnconfigure(0, minsize=800, weight=1)
@@ -409,20 +455,31 @@ class main_menu():
         # Experiment dropdown menu options
         experiment_menu.add_cascade(label="Create New", menu=create_new_menu)
         # Open experiment
-        experiment_menu.add_command(label="Open Experiment", command=self.open_experiment)
+        experiment_menu.add_command(
+            label="Open Experiment", command=self.open_experiment
+        )
 
         # "Create New" dropdown menu options
-        create_new_menu.add_command(label="Instruction", command=self.create_new_instruction)
+        create_new_menu.add_command(
+            label="Instruction", command=self.create_new_instruction
+        )
         create_new_menu.add_command(label="Experiment", command=self.profile_setup)
 
         # "Edit Current" dropdown menu options
         experiment_menu.add_cascade(label="Edit Current", menu=edit_current_menu)
-        edit_current_menu.add_command(label="Instruction", command=lambda:self.create_new_instruction(self.state['instruction']))
-        edit_current_menu.add_command(label="Experiment", command=lambda:self.profile_parameters(edit=True))
+        edit_current_menu.add_command(
+            label="Instruction",
+            command=lambda: self.create_new_instruction(self.state["instruction"]),
+        )
+        edit_current_menu.add_command(
+            label="Experiment", command=lambda: self.profile_parameters(edit=True)
+        )
         experiment_menu.add_separator()
 
         # "Save Experiment" dropdown menu option
-        experiment_menu.add_command(label="Save Experiment", command=self.save_experiment)
+        experiment_menu.add_command(
+            label="Save Experiment", command=self.save_experiment
+        )
         experiment_menu.add_separator()
 
         # Run dropdown menu options
@@ -435,7 +492,9 @@ class main_menu():
         experiment_menu.add_command(label="Exit", command=self.window.destroy)
 
         # Threshold dropdown menu options
-        threshold_menu.add_command(label="Set Subject Threshold", command=self.set_subject_threshold)
+        threshold_menu.add_command(
+            label="Set Subject Threshold", command=self.set_subject_threshold
+        )
         threshold_menu.add_command(label="Options")
 
         # About dropdown menu option
@@ -443,6 +502,7 @@ class main_menu():
 
         # Start menu
         self.window.mainloop()
+
 
 menu = main_menu()
 menu.init_main_window()
