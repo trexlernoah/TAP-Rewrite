@@ -264,6 +264,7 @@ class MainMenu:
             return
 
         profile_parameters_window = tk.Toplevel(self.window)
+        # profile_parameters_window.protocol("WM_DELETE_WINDOW", self.ask_to_exit)
         profile_parameters = ProfileParameters(
             profile_parameters_window,
             trial_count,
@@ -316,7 +317,11 @@ class MainMenu:
             self.show_message("There was an error opening the file.")
 
     def show_message(self, message: str):
-        messagebox.showinfo(title="Notification", message=message)
+        messagebox.showinfo("Notification", message)
+
+    def ask_to_exit(self):
+        if messagebox.askyesnocancel("Exit", "Are you sure you want to exit?"):
+            self.window.destroy()
 
     def init_main_window(self):
         # Cofigure sizing for rows and columns
@@ -382,7 +387,7 @@ class MainMenu:
         experiment_menu.add_separator()
 
         # Exit dropdown menu option
-        experiment_menu.add_command(label="Exit", command=self.window.destroy)
+        experiment_menu.add_command(label="Exit", command=self.ask_to_exit)
 
         # Threshold dropdown menu options
         threshold_menu.add_command(
@@ -390,8 +395,8 @@ class MainMenu:
         )
         threshold_menu.add_command(label="Options")
 
-        # About dropdown menu option
-        # about_menu.add_command(label="About", command=show_about_info)
+        # Ask to close
+        self.window.protocol("WM_DELETE_WINDOW", self.ask_to_exit)
 
         # Start menu
         self.window.mainloop()

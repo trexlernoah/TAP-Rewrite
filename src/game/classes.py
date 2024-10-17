@@ -16,7 +16,7 @@ class GameState(Enum):
 
 class ErrorMessage(Enum):
     WAIT_TO_START = "Waited too long to press"
-    WAIT_TOO_LONG = "Waited too long"
+    WAIT_TOO_LONG = "Waited too long to release"
     RELEASE_TOO_SOON = "Released spacebar too soon"
     WAIT_TO_SHOCK = "Waited too long to shock"
     SHOCK_TOO_LONG = "Held shock button too long"
