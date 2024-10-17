@@ -4,13 +4,12 @@ from classes import Trial
 from typing import List
 
 
-class ProfileParameters(tk.Toplevel):
-    def __init__(self, master, rows: int, initial_data: List[Trial] = None):
+class ProfileParameters(tk.Frame):
+    def __init__(
+        self, master, rows: int, initial_data: List[Trial] = None, readonly=False
+    ):
         self.rows = rows
-        tk.Toplevel.__init__(self, master)
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        self.frame = tk.Frame(self)
+        self.frame = tk.Frame(master)
         self.frame.grid_columnconfigure(0, weight=1)
         self.frame.grid_rowconfigure(0, weight=1)
 
@@ -44,6 +43,10 @@ class ProfileParameters(tk.Toplevel):
 
         self.frame.grid(row=0, column=0, sticky="nswe")
         self.sheet.grid(row=0, column=0, sticky="nswe")
+
+        if readonly:
+            self.sheet.disable_bindings()
+            self.sheet.readonly(self.sheet["A1"].expand())
 
     def enable_dropdowns(self, event=None):
         if event is None:

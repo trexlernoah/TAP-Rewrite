@@ -244,7 +244,7 @@ class MainMenu:
     def profile_parameters(self, trial_count: int, edit=False):
         def ok():
             try:
-                data = profile_parameters_window.get_data()
+                data = profile_parameters.get_data()
                 trials = [reform_data(x) for x in data]
 
                 if None in trials:
@@ -252,6 +252,7 @@ class MainMenu:
 
                 self.settings.trials = trials
                 profile_parameters_window.destroy()
+                self.display_trials()
 
             except ValueError:
                 self.show_message(
@@ -262,8 +263,11 @@ class MainMenu:
             self.show_message("You must first specify trial count!")
             return
 
-        profile_parameters_window = ProfileParameters(
-            self.window, trial_count, (self.settings.trials if edit else None)
+        profile_parameters_window = tk.Toplevel(self.window)
+        profile_parameters = ProfileParameters(
+            profile_parameters_window,
+            trial_count,
+            (self.settings.trials if edit else None),
         )
 
         ok_btn = tk.Button(
@@ -273,33 +277,43 @@ class MainMenu:
         )
         ok_btn.grid(row=trial_count + 2, column=0)
 
+    def display_trials(self):
+        ProfileParameters(
+            self.window, len(self.settings.trials), self.settings.trials, readonly=True
+        )
+
     ### File utilities
 
     def save_experiment(self):
         filetypes = [("TAP files", "*.tap"), ("All files", "*.*")]
-        with filedialog.asksaveasfile(
+        file = filedialog.asksaveasfile(
             mode="wb",
             filetypes=filetypes,
             initialfile=self.settings.filename,
             defaultextension=".tap",
-        ) as file:
-            try:
-                self.settings.filename = file.name
-                pickle.dump(asdict(self.settings), file)
-            except Exception:
-                self.show_message("There was an error saving the file.")
+        )
+        if not file:
+            return
+        try:
+            self.settings.filename = file.name
+            pickle.dump(asdict(self.settings), file)
+        except Exception:
+            self.show_message("There was an error saving the file.")
 
     def open_experiment(self):
         filetypes = [("TAP files", "*.tap"), ("All files", "*.*")]
-        with filedialog.askopenfile(
+        file = filedialog.askopenfile(
             mode="rb", filetypes=filetypes, defaultextension=".tap"
-        ) as file:
-            try:
-                settings_dict = pickle.load(file)
-                self.settings = Settings(**settings_dict)  # Double asterick for kwargs
-                self.settings.filename = file.name
-            except Exception:
-                self.show_message("There was an error opening the file.")
+        )
+        if not file:
+            return
+        try:
+            settings_dict = pickle.load(file)
+            self.settings = Settings(**settings_dict)  # Double asterick for kwargs
+            self.settings.filename = file.name
+            self.display_trials()
+        except Exception:
+            self.show_message("There was an error opening the file.")
 
     def show_message(self, message: str):
         messagebox.showinfo(title="Notification", message=message)
@@ -309,15 +323,11 @@ class MainMenu:
         self.window.rowconfigure(1, minsize=800, weight=1)
         self.window.columnconfigure(0, minsize=800, weight=1)
 
-        main = tk.Frame(self.window)
-        main.pack(fill="both", expand=True, padx=1, pady=(4, 0))
-
-        # Add menu bar
+        # Menu bar
         menubar = tk.Menu(self.window)
         self.window.config(menu=menubar)
 
-        # Add menu options in menu bar
-        # Names should be fairly self explanitory
+        # Menu options in menu bar
         experiment_menu = tk.Menu(menubar, tearoff=0)
         open_experiment_menu = tk.Menu(menubar, tearoff=0)
         create_new_menu = tk.Menu(menubar, tearoff=0)
