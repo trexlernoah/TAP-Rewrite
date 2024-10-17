@@ -74,9 +74,11 @@ class Data:
             error_data[error.name] += 1
         return error_data
 
-    def save_data(self, filename: str, subject_id: str):
-        if not filename:
+    def save_data(self, cwd: str, subject_id: str):
+        if not cwd:
             return
+
+        filename = f"{cwd}/data/{subject_id}.dat"
 
         data = self.get_data_frame()
         data.to_csv(filename, sep="\t", encoding="utf-8", index=False)
@@ -96,6 +98,6 @@ class Data:
 @dataclass(kw_only=True)
 class Settings:
     filename: str = ""
-    subject_id: str = "SUBJ"
+    subject_id: str = ""
     instruction: str = "Enter instructions here."
     trials: List[Trial] = field(default_factory=list)

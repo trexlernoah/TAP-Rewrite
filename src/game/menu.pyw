@@ -7,8 +7,8 @@ from dataclasses import asdict
 
 import game
 from profile_parameters import ProfileParameters
-from classes import Trial, Settings
-from utils import validate_data
+from classes import Settings
+from utils import reform_data
 
 
 class MainMenu:
@@ -61,20 +61,26 @@ class MainMenu:
         # throw error here
         if df.empty:
             return
-        data.save_data("%s/data/%s.dat" % (os.getcwd(), self.settings.subject_id))
+        data.save_data(os.getcwd(), self.settings.subject_id)
 
-    def run_experiment(self):
+    def run_practice(self, trials):
+        return
+
+    def run_experiment(self, official=True):
         if len(self.settings.trials) <= 0:
-            messagebox.showinfo(
-                title="Warning", message="You must set the number of trials!"
-            )
+            self.show_message("You must set the number of trials!")
             return
-        self.run_official(self.settings.trials)
+        if not self.settings.subject_id:
+            self.show_message("You must set the subject ID!")
+
+        if official:
+            self.run_official(self.settings.trials)
+        else:
+            self.run_practice(self.settings.trials)
 
     def show_about_info(self):
-        messagebox.showinfo(
-            title="About",
-            message="This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module.",
+        self.show_message(
+            "This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module."
         )
 
     def set_options(self):
@@ -91,9 +97,7 @@ class MainMenu:
 
     def set_subject_threshold(self):
         if not self.settings.trials:
-            messagebox.showinfo(
-                title="Error", message="You must open an experiment first."
-            )
+            self.show_message("You must open an experiment first.")
             return
 
         subject_threshold = tk.Toplevel(self.window)
@@ -241,25 +245,21 @@ class MainMenu:
         def ok():
             try:
                 data = profile_parameters_window.get_data()
+                trials = [reform_data(x) for x in data]
 
-                for i in range(0, trial_count):
-                    trial = validate_data(data[i])
-                    if not trial:
-                        raise ValueError("Malformed data.")
-                    self.settings.trials.append(Trial(data[i]))
+                if None in trials:
+                    raise ValueError("Malformed data.")
 
+                self.settings.trials = trials
                 profile_parameters_window.destroy()
+
             except ValueError:
-                messagebox.showinfo(
-                    title="Error",
-                    message="There was an error creating the trials. Check your entries again.",
+                self.show_message(
+                    "There was an error creating the trials. Check your entries again."
                 )
 
         if not trial_count or trial_count <= 0:
-            messagebox.showinfo(
-                title="Error",
-                message="You must first create an experiment!",
-            )
+            self.show_message("You must first specify trial count!")
             return
 
         profile_parameters_window = ProfileParameters(
@@ -273,40 +273,36 @@ class MainMenu:
         )
         ok_btn.grid(row=trial_count + 2, column=0)
 
+    ### File utilities
+
     def save_experiment(self):
         filetypes = [("TAP files", "*.tap"), ("All files", "*.*")]
-        file = filedialog.asksaveasfile(
+        with filedialog.asksaveasfile(
             mode="wb",
             filetypes=filetypes,
             initialfile=self.settings.filename,
             defaultextension=".tap",
-        )
-        if file is None:
-            return
-        try:
-            self.settings.filename = file.name
-            pickle.dump(asdict(self.settings), file)
-            file.close()
-        except Exception:
-            messagebox.showinfo(
-                title="Error", message="There was an error saving the file."
-            )
+        ) as file:
+            try:
+                self.settings.filename = file.name
+                pickle.dump(asdict(self.settings), file)
+            except Exception:
+                self.show_message("There was an error saving the file.")
 
     def open_experiment(self):
         filetypes = [("TAP files", "*.tap"), ("All files", "*.*")]
-        file = filedialog.askopenfile(
+        with filedialog.askopenfile(
             mode="rb", filetypes=filetypes, defaultextension=".tap"
-        )
-        if file is None:
-            return
-        try:
-            settings_dict = pickle.load(file)
-            self.settings = Settings(**settings_dict)
-            self.settings.filename = file.name
-        except Exception:
-            messagebox.showinfo(
-                title="Error", message="There was an error opening the file."
-            )
+        ) as file:
+            try:
+                settings_dict = pickle.load(file)
+                self.settings = Settings(**settings_dict)  # Double asterick for kwargs
+                self.settings.filename = file.name
+            except Exception:
+                self.show_message("There was an error opening the file.")
+
+    def show_message(self, message: str):
+        messagebox.showinfo(title="Notification", message=message)
 
     def init_main_window(self):
         # Cofigure sizing for rows and columns

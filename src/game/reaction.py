@@ -2,7 +2,7 @@ import pygame as pygame
 import random
 
 import constants
-from utils import GameState, ErrorMessage, Data
+from classes import GameState, ErrorMessage, Data
 from drawer import Drawer
 
 

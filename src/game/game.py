@@ -3,7 +3,7 @@ import pygame
 from reaction import ReactionTest
 from shock import ShockMeter
 from drawer import Drawer
-from utils import Trial, Data
+from classes import Trial, Data
 from typing import List
 
 
@@ -37,7 +37,7 @@ def play(subject_id, trials: List[Trial]):
     shock_mngr = ShockMeter(drawer, main_data)
 
     for i, trial in enumerate(trials):
-        drawer.reset_meter()
+        drawer.reset_meter(0)
 
         reaction_data = react_mngr.run(i == 0)
         if not reaction_data:
