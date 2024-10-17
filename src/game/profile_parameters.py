@@ -1,9 +1,11 @@
 import tkinter as tk
 from tksheet import Sheet
+from classes import Trial
+from typing import List
 
 
 class ProfileParameters(tk.Toplevel):
-    def __init__(self, master, rows: int):
+    def __init__(self, master, rows: int, initial_data: List[Trial] = None):
         self.rows = rows
         tk.Toplevel.__init__(self, master)
         self.grid_columnconfigure(0, weight=1)
@@ -21,7 +23,6 @@ class ProfileParameters(tk.Toplevel):
         )
 
         self.sheet.enable_bindings("single_select", "undo", "arrowkeys", "move_columns")
-        # self.sheet.set_options(auto_resize_rows=20)
         self.sheet.headers(["Win or Lose", "Shock", "Feedback"])
 
         self.sheet.dropdown(
@@ -32,6 +33,14 @@ class ProfileParameters(tk.Toplevel):
         )
         self.sheet.dropdown("B", values=list(range(1, 11)), set_value="")
         self.sheet.dropdown("C", values=list(range(1, 11)), set_value="")
+
+        if initial_data is not None:
+            for i, trial in enumerate(initial_data):
+                self.sheet[i].data = [trial.wl, trial.shock, trial.feedback]
+                self.enable_dropdowns(
+                    # Pass anonymous event object with value and row attributes
+                    event=type("", (object,), {"value": trial.wl, "row": i})()
+                )
 
         self.frame.grid(row=0, column=0, sticky="nswe")
         self.sheet.grid(row=0, column=0, sticky="nswe")

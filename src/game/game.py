@@ -2,9 +2,9 @@ import pygame
 
 from reaction import ReactionTest
 from shock import ShockMeter
-
 from drawer import Drawer
-from utils import *
+from utils import Trial, Data
+from typing import List
 
 
 def init():
@@ -26,28 +26,24 @@ def init():
     return (display, subsurf)
 
 
-def play(subject_id, trials: list[Trial]):
+def play(subject_id, trials: List[Trial]):
     if len(trials) <= 0:
         return
     display, subsurf = init()
-    # TODO replace with subj id and thresholds
-    main_data = Data(subject_id, 0, 0)
+    main_data = Data()
 
     drawer = Drawer(display, subsurf)
     react_mngr = ReactionTest(drawer, main_data)
     shock_mngr = ShockMeter(drawer, main_data)
 
-    trial = 0
-    main_data.generate_new_data(trial + 1)
-    while trial < len(trials):
+    for i, trial in enumerate(trials):
         drawer.reset_meter()
 
-        reaction_data = react_mngr.run(trial == 0)
+        reaction_data = react_mngr.run(i == 0)
         if not reaction_data:
             break
 
-        # Change this
-        wl = trials[trial].wl == "Win"
+        wl = trial.wl == "Win"
         main_data.current_data_row.wl = "W" if wl else "L"
 
         if wl:
@@ -55,10 +51,10 @@ def play(subject_id, trials: list[Trial]):
             if trial_data is None:
                 break
         else:
-            shock_mngr.lose_loop(int(trials[trial].shock))
+            shock_level = int(trial.shock)
+            shock_mngr.lose_loop(shock_level)
 
-        main_data.save_and_flush_data()
-        trial += 1
+        main_data.finish_trial()
 
     pygame.quit()
 

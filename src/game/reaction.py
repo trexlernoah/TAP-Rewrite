@@ -34,7 +34,7 @@ class ReactionTest:
             if delta_time >= 3000 and not error_flag:
                 error_flag = True
                 self.drawer.render_text("PLEASE PRESS THE SPACEBAR")
-                self.data.current_error.add_error(ErrorMessage.WAIT_TO_START)
+                self.data.add_error(ErrorMessage.WAIT_TO_START)
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     return True
@@ -53,12 +53,12 @@ class ReactionTest:
                 if event.type == pygame.TEXTINPUT and event.text == " ":
                     if current_time > timer_release + 1000:
                         self.drawer.render_text("YOU WAITED TOO LONG", 3700)
-                        self.data.current_error.add_error(ErrorMessage.WAIT_TOO_LONG)
+                        self.data.add_error(ErrorMessage.WAIT_TOO_LONG)
                         return False
                 elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
                     if current_time < timer_release:
                         self.drawer.render_text("YOU RELEASED TOO SOON", 3700)
-                        self.data.current_error.add_error(ErrorMessage.RELEASE_TOO_SOON)
+                        self.data.add_error(ErrorMessage.RELEASE_TOO_SOON)
                         return False
                     else:
                         self.drawer.render_text("", constants.FG, 1000)

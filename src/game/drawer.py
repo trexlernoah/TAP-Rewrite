@@ -1,7 +1,7 @@
-import pygame, math
+import pygame
+import math
 
-from constants import *
-from utils import *
+import constants
 
 
 class Drawer:
@@ -15,8 +15,8 @@ class Drawer:
         self.center_x = window.centerx
         self.center_y = window.centery
 
-    def render_text(self, text, color=FG, delay=0):
-        self.textbox.fill(BG)
+    def render_text(self, text, color=constants.FG, delay=0):
+        self.textbox.fill(constants.BG)
         text_block = self.font.render(text, 1, color)
         self.textbox.blit(
             text_block, text_block.get_rect(center=self.textbox.get_rect().center)
@@ -34,28 +34,30 @@ class Drawer:
         return rect, startRad, endRad
 
     def draw_circles(self):
-        self.surface.fill(WHITE)
+        self.surface.fill(constants.WHITE)
 
         for i in range(1, 11):
             # Draw circles
             offset = -275 + i * 50
             x = int(self.center_x + offset)
             y = int((self.center_y - 60) + (self.center_y / 2))
-            pygame.draw.circle(self.surface, BLACK, (x, y), RADIUS, 3)
+            pygame.draw.circle(
+                self.surface, constants.BLACK, (x, y), constants.RADIUS, 3
+            )
 
             # Draw text
             offset = -280 + i * 50
             x = self.center_x + offset
             y = (self.center_y - 30) + (self.center_y / 2)
-            text = self.font.render(str(i), 1, BLACK)
+            text = self.font.render(str(i), 1, constants.BLACK)
             self.surface.blit(text, (x, y))
 
-        low_text = self.font.render("Low", 1, BLACK)
+        low_text = self.font.render("Low", 1, constants.BLACK)
         self.surface.blit(
             low_text, (self.center_x - 230, (self.center_y + 10) + (self.center_y / 2))
         )
 
-        high_text = self.font.render("High", 1, BLACK)
+        high_text = self.font.render("High", 1, constants.BLACK)
         self.surface.blit(
             high_text, (self.center_x + 220, (self.center_y + 10) + (self.center_y / 2))
         )
@@ -63,7 +65,7 @@ class Drawer:
         # Initialize arc
         pygame.draw.circle(
             self.surface,
-            BLACK,
+            constants.BLACK,
             (self.center_x, self.center_y - 250),
             100,
             width=5,
@@ -72,7 +74,7 @@ class Drawer:
         )
         pygame.draw.line(
             self.surface,
-            BLACK,
+            constants.BLACK,
             (self.center_x - 100, self.center_y - 250),
             (self.center_x + 100, self.center_y - 250),
             5,
@@ -87,11 +89,11 @@ class Drawer:
 
         x = int(self.center_x + offset)
         y = int((self.center_y - 60) + (self.center_y / 2))
-        pygame.draw.circle(self.surface, RED, (x, y), RADIUS, 39)
+        pygame.draw.circle(self.surface, constants.RED, (x, y), constants.RADIUS, 39)
         rect, startRad, endRad = self.clockwise_arc(
             (self.center_x, self.center_y - 250), 95, 180, (180 + (180 / 10 * key))
         )
-        pygame.draw.arc(self.surface, RED, rect, startRad, endRad, 95)
+        pygame.draw.arc(self.surface, constants.RED, rect, startRad, endRad, 95)
         pygame.display.flip()
 
     def reset_meter(self, _key):
@@ -105,11 +107,11 @@ class Drawer:
         )
         pygame.draw.circle(
             self.surface,
-            WHITE,
+            constants.WHITE,
             (self.center_x + offset, (self.center_y - 60) + (self.center_y / 2)),
-            RADIUS,
+            constants.RADIUS,
             39,
         )
-        pygame.draw.arc(self.surface, WHITE, rect, startRad, endRad, 95)
+        pygame.draw.arc(self.surface, constants.WHITE, rect, startRad, endRad, 95)
         self.draw_circles()
         pygame.display.flip()

@@ -1,7 +1,6 @@
 import pygame
 
-from constants import *
-from utils import *
+from classes import ErrorMessage, Data
 from drawer import Drawer
 
 
@@ -42,7 +41,7 @@ class ShockMeter:
             ):
                 error_flag1 = True
                 self.drawer.render_text("YOU MUST PRESS A SHOCK BUTTON")
-                self.data.current_error.add_error(ErrorMessage.WAIT_TO_SHOCK)
+                self.data.add_error(ErrorMessage.WAIT_TO_SHOCK)
 
             for event in pygame.event.get():
                 if (
@@ -66,7 +65,7 @@ class ShockMeter:
                         self.drawer.render_text(
                             "YOU ARE DONE SHOCKING! PLEASE RELEASE SHOCK BUTTON"
                         )
-                        self.data.current_error.add_error(ErrorMessage.SHOCK_TOO_LONG)
+                        self.data.add_error(ErrorMessage.SHOCK_TOO_LONG)
                 elif event.type == pygame.KEYUP and event.unicode == key_pressed:  # end
                     if current_time > timer_start:
                         time_held = current_time - time_held

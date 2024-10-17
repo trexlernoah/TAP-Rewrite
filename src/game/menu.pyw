@@ -7,12 +7,11 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 import game
 import constants
 from profile_parameters import ProfileParameters
-from utils import Trial, validate_data
+from classes import Trial
+from utils import validate_data
 
 
-class main_menu:
-    """Tkinter menu class"""
-
+class MainMenu:
     def __init__(self) -> None:
         window = tk.Tk()
         window.title("TAP Python Edition")
@@ -58,15 +57,11 @@ class main_menu:
         instruction_text.insert("1.0", instruction)
 
     def run_official(self, trials):
-        if len(trials) == 0:
-            return
         data = game.play(self.state["subject_id"], trials)
         df = data.get_data_frame()
         # throw error here
         if df.empty:
             return
-        # filename = time.strftime("%Y%m%d-%H%M%S")
-        # data.save_data('%s/data/%s.dat' % (os.getcwd(), filename))
         data.save_data("%s/data/%s.dat" % (os.getcwd(), self.state["subject_id"]))
 
     def run_experiment(self):
@@ -231,9 +226,7 @@ class main_menu:
         cancel.grid(row=6, column=2)
 
     def get_trial_count(self):
-        number_of_trials = simpledialog.askinteger(
-            "Profile Setup", "Number of Trials: "
-        )
+        trial_count = simpledialog.askinteger("Profile Setup", "Number of Trials: ")
 
         # Fix
         # Checkbox for "Enable RCAP"
@@ -242,11 +235,10 @@ class main_menu:
         # self.state['trial-count'] = number_of_trials if not None else 0
         # update_variable("trials", number_of_trials, "experiment")
 
-        if number_of_trials is not None:
-            self.state["trial_count"] = number_of_trials
-            self.profile_parameters()
+        if trial_count is not None:
+            self.profile_parameters(trial_count)
 
-    def profile_parameters(self, edit=False):
+    def profile_parameters(self, trial_count: int, edit=False):
         def ok():
             try:
                 data = profile_parameters_window.get_data()
@@ -264,11 +256,16 @@ class main_menu:
                     message="There was an error creating the trials. Check your entries again.",
                 )
 
-        trial_count = self.state["trial_count"]
         if not trial_count or trial_count <= 0:
+            messagebox.showinfo(
+                title="Error",
+                message="You must first create an experiment!",
+            )
             return
 
-        profile_parameters_window = ProfileParameters(self.window, trial_count)
+        profile_parameters_window = ProfileParameters(
+            self.window, trial_count, (self.state["trials"] if edit else None)
+        )
 
         ok_btn = tk.Button(
             profile_parameters_window,
@@ -278,10 +275,10 @@ class main_menu:
         ok_btn.grid(row=trial_count + 2, column=0)
 
     def save_experiment(self):
-        files = [("TAP files", "*.tap"), ("All files", "*.*")]
+        filetypes = [("TAP files", "*.tap"), ("All files", "*.*")]
         file = filedialog.asksaveasfile(
             mode="wb",
-            filetypes=files,
+            filetypes=filetypes,
             initialfile=self.state["filename"],
             defaultextension=".tap",
         )
@@ -310,10 +307,6 @@ class main_menu:
             messagebox.showinfo(
                 title="Error", message="There was an error opening the file."
             )
-
-    def edit_experiment(self):
-        # if self.state[]
-        print("")
 
     def init_main_window(self):
         # Cofigure sizing for rows and columns
@@ -363,7 +356,10 @@ class main_menu:
             command=lambda: self.create_new_instruction(self.state["instruction"]),
         )
         edit_current_menu.add_command(
-            label="Experiment", command=lambda: self.profile_parameters(edit=True)
+            label="Experiment",
+            command=lambda: self.profile_parameters(
+                len(self.state["trials"]), edit=True
+            ),
         )
         experiment_menu.add_separator()
 
@@ -395,5 +391,5 @@ class main_menu:
         self.window.mainloop()
 
 
-menu = main_menu()
+menu = MainMenu()
 menu.init_main_window()
