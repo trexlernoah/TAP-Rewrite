@@ -3,11 +3,11 @@ import pickle
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
+from dataclasses import asdict
 
 import game
-import constants
 from profile_parameters import ProfileParameters
-from classes import Trial
+from classes import Trial, Settings
 from utils import validate_data
 
 
@@ -19,12 +19,11 @@ class MainMenu:
         window.resizable(width=True, height=True)
 
         self.window = window
-        self.state = constants.initial_state
+        self.settings = Settings()
 
     def create_new_instruction(self, instruction="Enter instructions here"):
         def ok():
-            self.state["instruction"] = instruction_text.get("1.0", tk.END)
-            print(self.state["instruction"])
+            self.settings.instruction = instruction_text.get("1.0", tk.END)
             new_instruction.destroy()
 
         def cancel():
@@ -57,20 +56,20 @@ class MainMenu:
         instruction_text.insert("1.0", instruction)
 
     def run_official(self, trials):
-        data = game.play(self.state["subject_id"], trials)
+        data = game.play(self.settings.subject_id, trials)
         df = data.get_data_frame()
         # throw error here
         if df.empty:
             return
-        data.save_data("%s/data/%s.dat" % (os.getcwd(), self.state["subject_id"]))
+        data.save_data("%s/data/%s.dat" % (os.getcwd(), self.settings.subject_id))
 
     def run_experiment(self):
-        if len(self.state["trials"]) <= 0:
+        if len(self.settings.trials) <= 0:
             messagebox.showinfo(
                 title="Warning", message="You must set the number of trials!"
             )
             return
-        self.run_official(self.state["trials"])
+        self.run_official(self.settings.trials)
 
     def show_about_info(self):
         messagebox.showinfo(
@@ -91,7 +90,7 @@ class MainMenu:
         options_tab.add(timing_options, text="Timing")
 
     def set_subject_threshold(self):
-        if not self.state["trials"]:
+        if not self.settings.trials:
             messagebox.showinfo(
                 title="Error", message="You must open an experiment first."
             )
@@ -164,7 +163,7 @@ class MainMenu:
             nonlocal low_mA, high_mA
             # TODO apply low/high shocks to threshold
             id_num = subject_id_entry.get()
-            self.state["subject_id"] = str(id_num)
+            self.settings.subject_id = str(id_num)
             subject_threshold.destroy()
 
         start_lower_level = tk.Button(
@@ -247,7 +246,7 @@ class MainMenu:
                     trial = validate_data(data[i])
                     if not trial:
                         raise ValueError("Malformed data.")
-                    self.state["trials"].append(Trial(data[i]))
+                    self.settings.trials.append(Trial(data[i]))
 
                 profile_parameters_window.destroy()
             except ValueError:
@@ -264,7 +263,7 @@ class MainMenu:
             return
 
         profile_parameters_window = ProfileParameters(
-            self.window, trial_count, (self.state["trials"] if edit else None)
+            self.window, trial_count, (self.settings.trials if edit else None)
         )
 
         ok_btn = tk.Button(
@@ -279,14 +278,14 @@ class MainMenu:
         file = filedialog.asksaveasfile(
             mode="wb",
             filetypes=filetypes,
-            initialfile=self.state["filename"],
+            initialfile=self.settings.filename,
             defaultextension=".tap",
         )
         if file is None:
             return
         try:
-            self.state["filename"] = file.name
-            pickle.dump(self.state, file)
+            self.settings.filename = file.name
+            pickle.dump(asdict(self.settings), file)
             file.close()
         except Exception:
             messagebox.showinfo(
@@ -301,8 +300,9 @@ class MainMenu:
         if file is None:
             return
         try:
-            self.state = pickle.load(file)
-            self.state["filename"] = file.name
+            settings_dict = pickle.load(file)
+            self.settings = Settings(**settings_dict)
+            self.settings.filename = file.name
         except Exception:
             messagebox.showinfo(
                 title="Error", message="There was an error opening the file."
@@ -353,12 +353,12 @@ class MainMenu:
         experiment_menu.add_cascade(label="Edit Current", menu=edit_current_menu)
         edit_current_menu.add_command(
             label="Instruction",
-            command=lambda: self.create_new_instruction(self.state["instruction"]),
+            command=lambda: self.create_new_instruction(self.settings.instruction),
         )
         edit_current_menu.add_command(
             label="Experiment",
             command=lambda: self.profile_parameters(
-                len(self.state["trials"]), edit=True
+                len(self.settings.trials), edit=True
             ),
         )
         experiment_menu.add_separator()

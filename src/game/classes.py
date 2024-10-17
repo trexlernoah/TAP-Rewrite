@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 import constants
-from dataclasses import dataclass, astuple
+from dataclasses import dataclass, astuple, field
 from typing import List
 from enum import Enum
 
@@ -86,3 +86,11 @@ class Data:
             file.write("\n\n")
             for error, count in errors.items():
                 file.write(f"{ErrorMessage[error].value}: {count} time(s)\n")
+
+
+@dataclass(kw_only=True)
+class Settings:
+    filename: str = ""
+    subject_id: str = "SUBJ"
+    instruction: str = "Enter instructions here."
+    trials: List[Trial] = field(default_factory=list)
