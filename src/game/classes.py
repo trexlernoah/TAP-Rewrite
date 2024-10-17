@@ -2,7 +2,6 @@ import typing
 import pandas as pd
 import numpy as np
 
-import constants
 from dataclasses import dataclass, astuple, field
 from typing import List
 from enum import Enum
@@ -58,7 +57,13 @@ class Data:
             df = np.append(df, np.array([astuple(data_row)]), axis=0)
 
         df = pd.DataFrame(df)
-        df.columns = constants.DATA_HEADERS
+        df.columns = [
+            "Trial",
+            "W/L",
+            "Shock Intensity",
+            "Shock Duration",
+            "Reaction Time",
+        ]
 
         return df
 
