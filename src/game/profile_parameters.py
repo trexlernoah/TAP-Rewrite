@@ -4,6 +4,7 @@ from tksheet import Sheet
 
 class ProfileParameters(tk.Toplevel):
     def __init__(self, master, rows: int):
+        self.rows = rows
         tk.Toplevel.__init__(self, master)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -11,18 +12,16 @@ class ProfileParameters(tk.Toplevel):
         self.frame.grid_columnconfigure(0, weight=1)
         self.frame.grid_rowconfigure(0, weight=1)
 
-        # create an instance of Sheet()
         self.sheet = Sheet(
             self.frame,
-            data=[["", 0, 0] for r in range(rows)],
+            data=[["", "", ""] for r in range(rows)],
             theme="light blue",
             height=520,
             width=480,
         )
 
-        # enable various bindings
         self.sheet.enable_bindings("single_select", "undo", "arrowkeys", "move_columns")
-        self.sheet.set_options(auto_resize_rows=20)
+        # self.sheet.set_options(auto_resize_rows=20)
         self.sheet.headers(["Win or Lose", "Shock", "Feedback"])
 
         self.sheet.dropdown(
@@ -51,8 +50,8 @@ class ProfileParameters(tk.Toplevel):
         else:
             self.sheet.highlight_cells(cells=cells, bg=None, fg=None)
 
-    def print_data(self):
-        entire_sheet_data = (
-            self.sheet["A1"].expand().options(header=False, index=False).data
-        )
-        print(entire_sheet_data)
+    def get_data(self):
+        if self.rows == 1:
+            return [self.sheet["A1"].expand().options(header=False, index=False).data]
+        else:
+            return self.sheet["A1"].expand().options(header=False, index=False).data

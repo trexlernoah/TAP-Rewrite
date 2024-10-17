@@ -6,7 +6,8 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 
 import game
 import constants
-from utils import Trial
+from profile_parameters import ProfileParameters
+from utils import Trial, validate_data
 
 
 class main_menu:
@@ -229,7 +230,7 @@ class main_menu:
         )
         cancel.grid(row=6, column=2)
 
-    def profile_setup(self):
+    def get_trial_count(self):
         number_of_trials = simpledialog.askinteger(
             "Profile Setup", "Number of Trials: "
         )
@@ -240,151 +241,41 @@ class main_menu:
         # rcap_checkbox.grid(row=1, column=4)
         # self.state['trial-count'] = number_of_trials if not None else 0
         # update_variable("trials", number_of_trials, "experiment")
+
         if number_of_trials is not None:
-            # for i in range(number_of_trials):
-            # append_variable("trial-"+str(i), number_of_trials, "experiment")
             self.state["trial_count"] = number_of_trials
             self.profile_parameters()
-        else:
-            number_of_trials = 0
 
     def profile_parameters(self, edit=False):
-        def ok(wl, shocks, entries):
+        def ok():
             try:
-                trials = []
-                for i in range(1, len(entries)):
-                    trials.append(
-                        Trial(wl[i - 1].get(), shocks[i - 1].get(), entries[i][3].get())
-                    )
-                self.state["trials"] = trials
-                profile_parameters.destroy()
-            except:
+                data = profile_parameters_window.get_data()
+
+                for i in range(0, trial_count):
+                    trial = validate_data(data[i])
+                    if not trial:
+                        raise ValueError("Malformed data.")
+                    self.state["trials"].append(Trial(data[i]))
+
+                profile_parameters_window.destroy()
+            except ValueError:
                 messagebox.showinfo(
-                    title="Error", message="There was an error creating the trials."
+                    title="Error",
+                    message="There was an error creating the trials. Check your entries again.",
                 )
 
-        trial_num = self.state["trial_count"]
-        if not trial_num:
+        trial_count = self.state["trial_count"]
+        if not trial_count or trial_count <= 0:
             return
 
-        rows = trial_num + 1
-        columns = 4
-
-        profile_parameters = tk.Toplevel(self.window)
-        profile_parameters.geometry("800x600")
-        profile_parameters.title("Setup Profile Parameters")
-        profile_parameters.resizable(width=True, height=True)
-        profile_parameters.rowconfigure(0, weight=1)
-        profile_parameters.columnconfigure(0, weight=1)
-
-        # profile_parameters.grid_rowconfigure(0, weight=1)
-        # profile_parameters.columnconfigure(0, weight=1)
-
-        grid_frame = tk.Frame(profile_parameters)
-        grid_frame.grid(row=0, column=0, pady=(10, 0), sticky="news", columnspan=2)
-        grid_frame.grid_rowconfigure(0, weight=1)
-        grid_frame.grid_columnconfigure(0, weight=1)
-        # grid_frame.grid_propagate(False)
-
-        canvas = tk.Canvas(grid_frame, bg="white")
-        canvas.grid(row=rows, column=0, sticky="news")
-
-        vsb = tk.Scrollbar(grid_frame, orient="vertical", command=canvas.yview)
-        vsb.grid(row=0, column=1, sticky="ns")
-        canvas.configure(yscrollcommand=vsb.set)
-
-        frame_buttons = tk.Frame(canvas)
-        canvas.create_window((0, 0), window=frame_buttons, anchor="nw")
-
-        entries = [[tk.Entry() for j in range(columns)] for i in range(rows)]
-        wl = []
-        shock_vars = []
-        feedback_vars = []
-        numbers = list(range(1, 11))
-
-        label1 = tk.Label(frame_buttons, text="Win or Lose")
-        label1.grid(row=0, column=1, sticky="news")
-        label2 = tk.Label(frame_buttons, text="Shock")
-        label2.grid(row=0, column=2, sticky="news")
-        label3 = tk.Label(frame_buttons, text="Feedback")
-        label3.grid(row=0, column=3, sticky="news")
-
-        def insert_text(
-            idx: int, wl_var: tk.StringVar, shock: tk.OptionMenu, feedback: tk.Entry
-        ):
-            trials = self.state["trials"]
-            if len(trials) == 0:
-                return
-
-            trial: Trial = trials[idx]
-            wl_var.set(str(trial.wl))
-            if wl_var.get() == "Lose":
-                shock.configure(state="normal")
-                feedback.configure(state="normal")
-                feedback.delete(0, tk.END)
-                feedback.insert(0, str(trial.feedback))
-            else:
-                shock.configure(state="disabled")
-                feedback.configure(state="disabled")
-
-        row_entries = {}
-
-        for i in range(1, rows):
-            row_name = "wl" + str(i - 1)
-            shock_var = tk.StringVar()
-            feedback_var = tk.StringVar()
-            shock_entry = tk.OptionMenu(frame_buttons, shock_var, *numbers)
-            feedback_entry = tk.OptionMenu(frame_buttons, feedback_var, *numbers)
-
-            def is_disabled(*args):
-                try:
-                    wl = row_entries.get(args[0])
-                    if wl[0].get() == "Lose":
-                        wl[1].configure(state="normal")
-                        wl[2].configure(state="normal")
-                    else:
-                        wl[1].configure(state="disabled")
-                        wl[2].configure(state="disabled")
-                except:
-                    print("Error disabling row")
-
-            wl_var = tk.StringVar(name=row_name)
-            wl_var.trace_add("write", is_disabled)
-            wl.append(wl_var)
-            shock_vars.append(shock_var)
-            feedback_vars.append(feedback_var)
-
-            entries[i][0] = tk.Label(frame_buttons, text=("Trial %d" % i))
-            entries[i][0].grid(row=i, column=0, sticky="news")
-
-            entries[i][1] = tk.OptionMenu(frame_buttons, wl_var, *("Win", "Lose"))
-            entries[i][1].grid(row=i, column=1, sticky="news")
-            entries[i][2] = shock_entry
-            entries[i][2].grid(row=i, column=2, sticky="news")
-            entries[i][3] = feedback_entry
-            entries[i][3].grid(row=i, column=3, sticky="news")
-
-            row_entries[row_name] = [wl_var, shock_entry, feedback_entry]
-
-            if edit:
-                insert_text(i - 1, wl_var, shock_entry, feedback_entry)
-
-        # Update buttons frames idle tasks to let tkinter calculate buttons sizes
-        frame_buttons.update_idletasks()
-
-        # Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
-        # first4columns_width = sum([entries[0][j].winfo_width() for j in range(0, 4)])
-        # first5rows_height = sum([entries[i][0].winfo_height() for i in range(0, (rows if rows < 5 else 5))])
-        height = entries[i][0].winfo_height() * 5
-        grid_frame.config(width=330 + vsb.winfo_width(), height=height)
-
-        # Set the canvas scrolling region
-        canvas.config(scrollregion=canvas.bbox("all"))
+        profile_parameters_window = ProfileParameters(self.window, trial_count)
 
         ok_btn = tk.Button(
-            profile_parameters, text="Ok", command=lambda: ok(wl, shock_vars, entries)
+            profile_parameters_window,
+            text="Ok",
+            command=ok,
         )
-        ok_btn.grid(row=rows + 1, column=0)
+        ok_btn.grid(row=trial_count + 2, column=0)
 
     def save_experiment(self):
         files = [("TAP files", "*.tap"), ("All files", "*.*")]
@@ -400,7 +291,7 @@ class main_menu:
             self.state["filename"] = file.name
             pickle.dump(self.state, file)
             file.close()
-        except:
+        except Exception:
             messagebox.showinfo(
                 title="Error", message="There was an error saving the file."
             )
@@ -415,7 +306,7 @@ class main_menu:
         try:
             self.state = pickle.load(file)
             self.state["filename"] = file.name
-        except:
+        except Exception:
             messagebox.showinfo(
                 title="Error", message="There was an error opening the file."
             )
@@ -463,7 +354,7 @@ class main_menu:
         create_new_menu.add_command(
             label="Instruction", command=self.create_new_instruction
         )
-        create_new_menu.add_command(label="Experiment", command=self.profile_setup)
+        create_new_menu.add_command(label="Experiment", command=self.get_trial_count)
 
         # "Edit Current" dropdown menu options
         experiment_menu.add_cascade(label="Edit Current", menu=edit_current_menu)

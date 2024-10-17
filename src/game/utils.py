@@ -20,10 +20,10 @@ class ErrorMessage(Enum):
 
 
 class Trial(object):
-    def __init__(self, wl: str, shock: int, feedback: int):
-        self.wl = wl
-        self.shock = shock
-        self.feedback = feedback
+    def __init__(self, data: [str, int, int]):
+        self.wl = data[0]
+        self.shock = data[1]
+        self.feedback = data[2]
 
 
 class DataRow(object):
@@ -161,3 +161,14 @@ class StoppableThread(threading.Thread):
 
     def stopped(self):
         return self._stop_event.is_set()
+
+
+def validate_data(self, trial_entry: [str, int, int]) -> [str, int, int] | None:
+    if trial_entry[0] == "Win":
+        return ["Win", 0, 0]
+    elif trial_entry[0] == "Lose":
+        if not trial_entry[1] or not trial_entry[2]:
+            return None
+        return trial_entry
+    else:
+        return None
