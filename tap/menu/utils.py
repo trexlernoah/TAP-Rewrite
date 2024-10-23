@@ -1,4 +1,4 @@
-from classes import Trial
+from tap.classes import Trial
 
 
 def reform_data(trial_entry: [str, int, int]) -> Trial or None:

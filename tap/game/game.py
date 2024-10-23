@@ -1,10 +1,11 @@
 import pygame
-
-from reaction import ReactionTest
-from shock import ShockMeter
-from drawer import Drawer
-from classes import Trial, Data
 from typing import List
+
+from tap.game.reaction import ReactionTest
+from tap.game.shock import ShockMeter
+from tap.game.drawer import Drawer
+
+from tap.classes import Trial, Data
 
 
 def init():

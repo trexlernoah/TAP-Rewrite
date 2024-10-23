@@ -1,4 +1,5 @@
 import typing
+import queue
 import pandas as pd
 import numpy as np
 
@@ -26,6 +27,12 @@ class Trial(typing.NamedTuple):
     wl: str
     shock: int
     feedback: int
+
+
+class ShockTask(typing.NamedTuple):
+    shock: int
+    duration: int
+    cooldown: int
 
 
 @dataclass
@@ -101,3 +108,17 @@ class Settings:
     subject_id: str = ""
     instruction: str = "Enter instructions here."
     trials: List[Trial] = field(default_factory=list)
+
+
+# https://stackoverflow.com/questions/6517953/clear-all-items-from-the-queue
+class Queue(queue.Queue):
+    def clear(self):
+        with self.mutex:
+            unfinished = self.unfinished_tasks - len(self.queue)
+            if unfinished <= 0:
+                if unfinished < 0:
+                    raise ValueError("task_done() called too many times")
+                self.all_tasks_done.notify_all()
+            self.unfinished_tasks = unfinished
+            self.queue.clear()
+            self.not_full.notify_all()

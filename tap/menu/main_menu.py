@@ -1,24 +1,25 @@
 import os
 import pickle
-import threading
 import tkinter as tk
+import dataclasses
+import threading
+
 from tkinter import filedialog, messagebox, simpledialog, ttk
-from dataclasses import asdict
 
-import game
-from profile_parameters import ProfileParameters
-from classes import Settings
-from utils import reform_data
+from tap.game import game
+from tap.menu.profile_parameters import ProfileParameters
+from tap.menu.utils import reform_data
+from tap.menu.subject_threshold import SubjectThreshold
+from tap.classes import Settings, Queue
 
 
-class MainMenu:
-    def __init__(self) -> None:
-        window = tk.Tk()
-        window.title("TAP Python Edition")
-        window.geometry("500x500")
-        window.resizable(width=True, height=True)
+class MainMenu(threading.Thread):
+    def __init__(self, task_queue: Queue) -> None:
+        super(MainMenu, self).__init__()
+        self.start()
 
-        self.window = window
+        self.task_queue = task_queue
+
         self.settings = Settings()
 
     def create_new_instruction(self, instruction="Enter instructions here"):
@@ -99,134 +100,7 @@ class MainMenu:
         if not self.settings.trials:
             self.show_message("You must open an experiment first.")
             return
-
-        subject_threshold = tk.Toplevel(self.window)
-        subject_threshold.geometry("300x200")
-        subject_threshold.resizable(False, False)
-        subject_threshold.title("Subject Threshold")
-
-        subject_id = tk.Label(subject_threshold, text="Subject ID")
-        subject_id.grid(row=1, column=1)
-
-        subject_id_entry = tk.Entry(subject_threshold)
-        subject_id_entry.grid(row=1, column=2)
-
-        set_lower_level = tk.Label(subject_threshold, text="Set Lower Level")
-        set_lower_level.grid(row=2, column=1)
-
-        # Just gonna leave the code for controlling the shock here
-        # Boolean for stopping the shock function
-        # global low_stopped, low_mA, high_stopped, high_mA
-        low_stopped = False
-        high_stopped = False
-        low_mA = 0.10
-        high_mA = 0.15
-
-        def start_low_shock():
-            nonlocal low_mA, low_stopped
-            while low_mA <= 0.50 and not low_stopped:
-                if low_stopped:
-                    print("Stopping low")
-                    break
-                # daq.test(low_mA, 1000)
-                low_mA = low_mA + 0.075
-                print("Administered shock of " + str(low_mA) + " milliamps.")
-            print("Returning shock of " + str(low_mA) + " milliamps.")
-
-        def stop_low_shock():
-            nonlocal low_stopped
-            low_stopped = True
-            print("Stopping lower threshold.")
-
-        def low_button_starter():
-            t = threading.Thread(target=start_low_shock)
-            t.start()
-
-        def start_high_shock():
-            nonlocal high_mA, high_stopped
-            print("Starting higher threshold.")
-            while high_mA <= 1.00 and not high_stopped:
-                if high_stopped:
-                    print("Stopping high")
-                    break
-                # daq.test(high_mA, 1000)
-                high_mA = high_mA + 0.075
-                print("Administered shock of " + str(high_mA) + " milliamps.")
-            print("Returning shock of " + str(high_mA) + " milliamps.")
-
-        def stop_high_shock():
-            nonlocal high_stopped
-            high_stopped = True
-            print("Stopping higher threshold.")
-
-        def high_button_starter():
-            t = threading.Thread(target=start_high_shock)
-            t.start()
-
-        def write_data():
-            nonlocal low_mA, high_mA
-            # TODO apply low/high shocks to threshold
-            id_num = subject_id_entry.get()
-            self.settings.subject_id = str(id_num)
-            subject_threshold.destroy()
-
-        start_lower_level = tk.Button(
-            subject_threshold,
-            relief="groove",
-            text="Start",
-            padx=10,
-            pady=10,
-            command=low_button_starter,
-        )
-        start_lower_level.grid(row=3, column=1)
-        stop_lower_level = tk.Button(
-            subject_threshold,
-            relief="groove",
-            text="Stop",
-            padx=10,
-            pady=10,
-            command=stop_low_shock,
-        )
-        stop_lower_level.grid(row=4, column=1)
-
-        set_higher_level = tk.Label(subject_threshold, text="Set Higher Level")
-        set_higher_level.grid(row=2, column=2)
-        start_higher_level = tk.Button(
-            subject_threshold,
-            relief="groove",
-            text="Start",
-            padx=10,
-            pady=10,
-            command=high_button_starter,
-        )
-        start_higher_level.grid(row=3, column=2)
-        stop_higher_level = tk.Button(
-            subject_threshold,
-            relief="groove",
-            text="Stop",
-            padx=10,
-            pady=10,
-            command=stop_high_shock,
-        )
-        stop_higher_level.grid(row=4, column=2)
-
-        spacer1 = tk.Label(subject_threshold, text="")
-        spacer1.grid(row=5, column=0)
-
-        # Fix
-        # Return values of lower and higher number (just a matter of using the append() function and returning the low and high functions)
-        ok = tk.Button(
-            subject_threshold, relief="groove", text="OK", command=write_data
-        )
-        ok.grid(row=6, column=1)
-
-        cancel = tk.Button(
-            subject_threshold,
-            relief="groove",
-            text="Cancel",
-            command=subject_threshold.destroy,
-        )
-        cancel.grid(row=6, column=2)
+        subject_threshold = SubjectThreshold(self.window, self.task_queue)
 
     def get_trial_count(self):
         trial_count = simpledialog.askinteger("Profile Setup", "Number of Trials: ")
@@ -297,7 +171,8 @@ class MainMenu:
             return
         try:
             self.settings.filename = file.name
-            pickle.dump(asdict(self.settings), file)
+            pickle.dump(dataclasses.asdict(self.settings), file)
+            file.close()
         except Exception:
             self.show_message("There was an error saving the file.")
 
@@ -313,6 +188,7 @@ class MainMenu:
             self.settings = Settings(**settings_dict)  # Double asterick for kwargs
             self.settings.filename = file.name
             self.display_trials()
+            file.close()
         except Exception:
             self.show_message("There was an error opening the file.")
 
@@ -323,7 +199,14 @@ class MainMenu:
         if messagebox.askyesnocancel("Exit", "Are you sure you want to exit?"):
             self.window.destroy()
 
-    def init_main_window(self):
+    def run(self):
+        window = tk.Tk()
+        window.title("TAP Python Edition")
+        window.geometry("500x500")
+        window.resizable(width=True, height=True)
+
+        self.window = window
+
         # Cofigure sizing for rows and columns
         self.window.rowconfigure(1, minsize=800, weight=1)
         self.window.columnconfigure(0, minsize=800, weight=1)
@@ -400,7 +283,3 @@ class MainMenu:
 
         # Start menu
         self.window.mainloop()
-
-
-menu = MainMenu()
-menu.init_main_window()

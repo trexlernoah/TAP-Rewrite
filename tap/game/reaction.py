@@ -1,9 +1,9 @@
 import pygame as pygame
 import random
 
-import constants
-from classes import GameState, ErrorMessage, Data
-from drawer import Drawer
+from tap.game import constants
+from tap.game.drawer import Drawer
+from tap.classes import GameState, ErrorMessage, Data
 
 
 class ReactionTest:

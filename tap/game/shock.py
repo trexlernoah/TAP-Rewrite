@@ -1,7 +1,7 @@
 import pygame
 
-from classes import ErrorMessage, Data
-from drawer import Drawer
+from tap.game.drawer import Drawer
+from tap.classes import ErrorMessage, Data
 
 
 class ShockMeter:

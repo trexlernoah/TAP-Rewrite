@@ -1,7 +1,8 @@
 import tkinter as tk
 from tksheet import Sheet
-from classes import Trial
 from typing import List
+
+from tap.classes import Trial
 
 
 class ProfileParameters(tk.Frame):

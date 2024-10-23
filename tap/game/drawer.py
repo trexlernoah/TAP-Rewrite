@@ -1,7 +1,7 @@
 import pygame
 import math
 
-import constants
+from tap.game import constants
 
 
 class Drawer:
