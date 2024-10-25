@@ -2,21 +2,21 @@ import time
 import threading
 import nidaqmx
 
-from tap.classes import Queue, ShockTask
+from tap.classes import ThreadHandler, ShockTask
 
 
 class DAQ(threading.Thread):
-    def __init__(self, task_queue: Queue, device_name="Dev1", pin="ao0"):
+    def __init__(self, thread_handler: ThreadHandler, device_name="Dev1", pin="ao0"):
         super(DAQ, self).__init__()
         print("daq init")
-        self.task_queue = task_queue
+        self.thread_handler = thread_handler
 
         self.device_name = device_name
         self.pin = pin
         self.analog_ouput_name = device_name + "/" + pin
 
         self.running = True
-        self.watch_queue()
+        self.run()
 
         # self.task = nidaqmx.Task("shock_task")
         # self.task.ao_channels.add_ao_voltage_chan(self.analog_ouput_name, 0, 5)
@@ -37,9 +37,28 @@ class DAQ(threading.Thread):
         print("Stopping shock")
         time.sleep(cooldown)
 
-    def watch_queue(self):
+    def run(self):
         while self.running:
-            task: ShockTask = self.task_queue.get()
+            self.watch_queue()
+
+    def watch_queue(self):
+        while not self.thread_handler.halt_event.is_set():
+            # if self.thread_handler.halt_event.is_set():
+            #     break
+            # if self.thread_handler.kill_event.is_set():
+            #     self.running = False
+
+            task: ShockTask = self.thread_handler.task_queue.get()
             print(task)
-            self.test(task.shock, task.duration, task.cooldown)
-            self.task_queue.task_done()
+
+            print("Sending shock of %f" % task.shock)
+            print(self.thread_handler.halt_event.is_set())
+            self.thread_handler.halt_event.wait(task.duration)
+            print("Stopping shock")
+            self.thread_handler.halt_event.wait(task.cooldown)
+
+            # self.test(task.shock, task.duration, task.cooldown)
+            self.thread_handler.task_queue.task_done()
+        # Clean up here
+        self.thread_handler.task_queue.clear()
+        self.thread_handler.halt_event.clear()

@@ -10,15 +10,15 @@ from tap.game import game
 from tap.menu.profile_parameters import ProfileParameters
 from tap.menu.utils import reform_data
 from tap.menu.subject_threshold import SubjectThreshold
-from tap.classes import Settings, Queue
+from tap.classes import Settings, ThreadHandler
 
 
 class MainMenu(threading.Thread):
-    def __init__(self, task_queue: Queue) -> None:
+    def __init__(self, thread_handler: ThreadHandler) -> None:
         super(MainMenu, self).__init__()
         self.start()
 
-        self.task_queue = task_queue
+        self.thread_handler = thread_handler
 
         self.settings = Settings()
 
@@ -83,6 +83,7 @@ class MainMenu(threading.Thread):
         self.show_message(
             "This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module."
         )
+        print(self.settings)
 
     def set_options(self):
         options = tk.Toplevel(self.window)
@@ -100,7 +101,7 @@ class MainMenu(threading.Thread):
         if not self.settings.trials:
             self.show_message("You must open an experiment first.")
             return
-        subject_threshold = SubjectThreshold(self.window, self.task_queue)
+        SubjectThreshold(self.window, self.thread_handler, self.settings)
 
     def get_trial_count(self):
         trial_count = simpledialog.askinteger("Profile Setup", "Number of Trials: ")

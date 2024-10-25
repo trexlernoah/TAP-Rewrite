@@ -6,6 +6,7 @@ import numpy as np
 from dataclasses import dataclass, astuple, field
 from typing import List
 from enum import Enum
+from threading import Event
 
 
 class GameState(Enum):
@@ -106,6 +107,8 @@ class Data:
 class Settings:
     filename: str = ""
     subject_id: str = ""
+    lower_threshold: int = 0
+    higher_threshold: int = 0
     instruction: str = "Enter instructions here."
     trials: List[Trial] = field(default_factory=list)
 
@@ -122,3 +125,9 @@ class Queue(queue.Queue):
             self.unfinished_tasks = unfinished
             self.queue.clear()
             self.not_full.notify_all()
+
+
+class ThreadHandler(typing.NamedTuple):
+    task_queue: Queue
+    halt_event: Event
+    kill_event: Event
