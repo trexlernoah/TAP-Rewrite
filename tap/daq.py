@@ -7,8 +7,7 @@ from tap.classes import ThreadHandler, ShockTask
 
 class DAQ(threading.Thread):
     def __init__(self, thread_handler: ThreadHandler, device_name="Dev1", pin="ao0"):
-        super(DAQ, self).__init__()
-        print("daq init")
+        super(DAQ, self).__init__(target=self.run)
         self.thread_handler = thread_handler
 
         self.device_name = device_name
@@ -16,7 +15,7 @@ class DAQ(threading.Thread):
         self.analog_ouput_name = device_name + "/" + pin
 
         self.running = True
-        self.run()
+        self.start()
 
         # self.task = nidaqmx.Task("shock_task")
         # self.task.ao_channels.add_ao_voltage_chan(self.analog_ouput_name, 0, 5)
@@ -38,15 +37,17 @@ class DAQ(threading.Thread):
         time.sleep(cooldown)
 
     def run(self):
-        while self.running:
+        while not self.thread_handler.kill_event.is_set():
             self.watch_queue()
 
     def watch_queue(self):
-        while not self.thread_handler.halt_event.is_set():
-            # if self.thread_handler.halt_event.is_set():
-            #     break
-            # if self.thread_handler.kill_event.is_set():
-            #     self.running = False
+        while (
+            not self.thread_handler.halt_event.is_set()
+            and not self.thread_handler.kill_event.is_set()
+        ):
+            # see if this behavior exists with queue.get()
+            if self.thread_handler.task_queue.empty():
+                continue
 
             task: ShockTask = self.thread_handler.task_queue.get()
             print(task)

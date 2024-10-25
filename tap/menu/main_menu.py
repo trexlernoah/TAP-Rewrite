@@ -4,6 +4,9 @@ import tkinter as tk
 import dataclasses
 import threading
 
+# ! TODO REFACTOR THREADS
+import gc
+
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from tap.game import game
@@ -15,7 +18,7 @@ from tap.classes import Settings, ThreadHandler
 
 class MainMenu(threading.Thread):
     def __init__(self, thread_handler: ThreadHandler) -> None:
-        super(MainMenu, self).__init__()
+        super(MainMenu, self).__init__(target=self.run)
         self.start()
 
         self.thread_handler = thread_handler
@@ -57,7 +60,7 @@ class MainMenu(threading.Thread):
         instruction_text.insert("1.0", instruction)
 
     def run_official(self, trials):
-        data = game.play(self.settings.subject_id, trials)
+        data = game.play(self.thread_handler, self.settings, trials)
         df = data.get_data_frame()
         # throw error here
         if df.empty:
@@ -198,7 +201,11 @@ class MainMenu(threading.Thread):
 
     def ask_to_exit(self):
         if messagebox.askyesnocancel("Exit", "Are you sure you want to exit?"):
+            self.thread_handler.kill_event.set()
             self.window.destroy()
+            # TODO this is probably bad
+            self.window = None
+            gc.collect()
 
     def run(self):
         window = tk.Tk()

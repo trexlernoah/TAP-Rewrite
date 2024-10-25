@@ -1,21 +1,45 @@
 import pygame
 
+
 from tap.game.drawer import Drawer
-from tap.classes import ErrorMessage, Data
+from tap.classes import ErrorMessage, Data, Settings, ThreadHandler, ShockTask
 
 
 class ShockMeter:
-    def __init__(self, drawer: Drawer, data: Data):
+    def __init__(
+        self,
+        thread_handler: ThreadHandler,
+        settings: Settings,
+        drawer: Drawer,
+        data: Data,
+    ):
+        self.thread_handler = ThreadHandler
+        self.settings = settings
         self.drawer = drawer
         self.data = data
 
-    def lose_loop(self, shock: int):
+    def generate_shock(self, shock: int, feedback: int):
+        if shock >= 10 or shock <= 0:
+            shock = 10
+        lower_threshold = self.settings.lower_threshold / 1000
+        higher_threshold = self.settings.higher_threshold / 1000
+        m = (higher_threshold - lower_threshold) / 10
+        print(f"{lower_threshold} - {higher_threshold} -> {m}")
+        shock_mA = (m * shock) + lower_threshold
+        print(shock_mA)
+        shock_task: ShockTask = ShockTask(shock_mA, feedback, 1)
+        print(self.thread_handler.task_queue.empty())
+        self.thread_handler.task_queue.put(shock_task)
+        # self.thread_handler.task_queue.put(ShockTask(shock_mA, feedback, 1))
+
+    def lose_loop(self, shock: int, feedback: int):
         self.drawer.render_text("YOU LOST! YOU GET A SHOCK", delay=2400)
         if shock >= 10 or shock <= 0:
             shock = 10
         key = 48 + shock
         self.drawer.draw_meter(key)
         # TODO send shock here
+        self.generate_shock(shock, feedback)
         self.drawer.render_text("", delay=1000)
         self.drawer.reset_meter(key)
         return True

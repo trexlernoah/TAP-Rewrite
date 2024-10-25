@@ -31,7 +31,8 @@ class Trial(typing.NamedTuple):
 
 
 class ShockTask(typing.NamedTuple):
-    shock: int
+    # ! TODO use decimals
+    shock: float
     duration: int
     cooldown: int
 

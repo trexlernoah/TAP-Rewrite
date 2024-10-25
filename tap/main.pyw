@@ -12,14 +12,9 @@ def main():
     tk_thread = MainMenu(thread_handler)
 
     daq_thread = DAQ(thread_handler)
-    daq_thread.start()
+    daq_thread.join()
 
-    # daq_thread.join()  # ?
-    while tk_thread.is_alive:
-        pass
-
-    # gracefully exit
-    # sys.exit(0)
+    tk_thread.join()
 
 
 if __name__ == "__main__":
