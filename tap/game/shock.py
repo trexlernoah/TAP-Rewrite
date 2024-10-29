@@ -13,7 +13,7 @@ class ShockMeter:
         drawer: Drawer,
         data: Data,
     ):
-        self.thread_handler = ThreadHandler
+        self.thread_handler = thread_handler
         self.settings = settings
         self.drawer = drawer
         self.data = data
@@ -21,16 +21,18 @@ class ShockMeter:
     def generate_shock(self, shock: int, feedback: int):
         if shock >= 10 or shock <= 0:
             shock = 10
+
+        # TODO move this somewhere else?
+        intensity = self.settings.intensities[shock - 1]
         lower_threshold = self.settings.lower_threshold / 1000
         higher_threshold = self.settings.higher_threshold / 1000
         m = (higher_threshold - lower_threshold) / 10
         print(f"{lower_threshold} - {higher_threshold} -> {m}")
-        shock_mA = (m * shock) + lower_threshold
+        print(f"intensity {intensity}")
+        shock_mA = ((m * shock) + lower_threshold) * (intensity / 100)
         print(shock_mA)
-        shock_task: ShockTask = ShockTask(shock_mA, feedback, 1)
-        print(self.thread_handler.task_queue.empty())
-        self.thread_handler.task_queue.put(shock_task)
-        # self.thread_handler.task_queue.put(ShockTask(shock_mA, feedback, 1))
+
+        self.thread_handler.task_queue.put(ShockTask(shock_mA, feedback, 1))
 
     def lose_loop(self, shock: int, feedback: int):
         self.drawer.render_text("YOU LOST! YOU GET A SHOCK", delay=2400)
@@ -40,7 +42,7 @@ class ShockMeter:
         self.drawer.draw_meter(key)
         # TODO send shock here
         self.generate_shock(shock, feedback)
-        self.drawer.render_text("", delay=1000)
+        self.drawer.render_text("", delay=feedback * 1000)
         self.drawer.reset_meter(key)
         return True
 

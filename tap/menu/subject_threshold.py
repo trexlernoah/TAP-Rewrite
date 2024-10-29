@@ -138,12 +138,13 @@ class SubjectThreshold(tk.Toplevel):
         shock_vals = range(min, max, 75)
 
         for s in shock_vals:
-            self.thread_handler.task_queue.put(ShockTask(s, 1, 4))
+            self.thread_handler.task_queue.put(ShockTask(s, 1, 3.5))
 
         update()
 
     def write_data(self):
         self.settings.lower_threshold = self.lower_threshold
         self.settings.higher_threshold = self.higher_threshold
+        self.settings.subject_id = self.subject_id_entry.get()
         print(self.settings)
         self.window.destroy()

@@ -1,5 +1,7 @@
 import typing
 import queue
+
+# import os
 import pandas as pd
 import numpy as np
 
@@ -89,6 +91,9 @@ class Data:
 
         filename = f"{cwd}/data/{subject_id}.dat"
 
+        # if os.path.exists(filename):
+        #     filename = f"{cwd}/data/{subject_id}.dat"
+
         data = self.get_data_frame()
         data.to_csv(filename, sep="\t", encoding="utf-8", index=False)
 
@@ -110,7 +115,8 @@ class Settings:
     subject_id: str = ""
     lower_threshold: int = 0
     higher_threshold: int = 0
-    instruction: str = "Enter instructions here."
+    instruction: str = ""
+    intensities: List[int] = field(default_factory=list)
     trials: List[Trial] = field(default_factory=list)
 
 

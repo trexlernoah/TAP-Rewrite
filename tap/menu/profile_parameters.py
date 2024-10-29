@@ -10,12 +10,19 @@ class ProfileParameters(tk.Frame):
         self, master, rows: int, initial_data: List[Trial] = None, readonly=False
     ):
         self.rows = rows
-        self.frame = tk.Frame(master)
-        self.frame.grid_columnconfigure(0, weight=1)
-        self.frame.grid_rowconfigure(0, weight=1)
+
+        self.notebook = tk.ttk.Notebook(master)
+
+        self.frame1 = tk.ttk.Frame(self.notebook)
+        self.frame1.grid_columnconfigure(0, weight=1)
+        self.frame1.grid_rowconfigure(0, weight=1)
+
+        self.frame2 = tk.ttk.Frame(self.notebook)
+        self.frame2.grid_columnconfigure(0, weight=1)
+        self.frame2.grid_rowconfigure(0, weight=1)
 
         self.sheet = Sheet(
-            self.frame,
+            self.frame1,
             data=[["", "", ""] for r in range(rows)],
             theme="light blue",
             height=520,
@@ -42,12 +49,33 @@ class ProfileParameters(tk.Frame):
                     event=type("", (object,), {"value": trial.wl, "row": i})()
                 )
 
-        self.frame.grid(row=0, column=0, sticky="nswe")
+        self.intensities = Sheet(
+            self.frame2,
+            data=[[i * 10] for i in range(1, 11)],
+            theme="light blue",
+            height=520,
+            width=480,
+        )
+        self.intensities.enable_bindings(
+            "edit_cell", "single_select", "undo", "arrowkeys", "move_columns"
+        )
+        self.intensities.headers(["Intensity"])
+        self.intensities.align_columns(columns=0, align="c")
+
+        self.frame1.grid(row=0, column=0, sticky="nswe")
+        self.frame2.grid(row=0, column=0, sticky="nswe")
         self.sheet.grid(row=0, column=0, sticky="nswe")
+        self.intensities.grid(row=0, column=0, sticky="nswe")
+
+        self.notebook.add(self.frame1, text="Trial Data")
+        self.notebook.add(self.frame2, text="Corresponding Intensities")
+        self.notebook.grid(row=0, column=0, sticky="nswe")
 
         if readonly:
             self.sheet.disable_bindings()
             self.sheet.readonly(self.sheet["A1"].expand())
+            self.intensities.disable_bindings()
+            self.intensities.readonly(self.intensities["A1"].expand())
 
     def enable_dropdowns(self, event=None):
         if event is None:
@@ -65,6 +93,12 @@ class ProfileParameters(tk.Frame):
 
     def get_data(self):
         if self.rows == 1:
-            return [self.sheet["A1"].expand().options(header=False, index=False).data]
+            return (
+                [self.sheet["A1"].expand().options(header=False, index=False).data],
+                self.intensities["A1"].expand().options(header=False, index=False).data,
+            )
         else:
-            return self.sheet["A1"].expand().options(header=False, index=False).data
+            return (
+                self.sheet["A1"].expand().options(header=False, index=False).data,
+                self.intensities["A1"].expand().options(header=False, index=False).data,
+            )

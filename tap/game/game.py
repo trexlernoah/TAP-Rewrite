@@ -34,8 +34,10 @@ def play(thread_handler: ThreadHandler, settings: Settings, trials: List[Trial])
     main_data = Data()
 
     drawer = Drawer(display, subsurf)
-    react_mngr = ReactionTest(drawer, main_data)
+    react_mngr = ReactionTest(drawer, main_data, settings)
     shock_mngr = ShockMeter(thread_handler, settings, drawer, main_data)
+
+    # drawer.render_text(settings.instruction, delay=10000)
 
     for i, trial in enumerate(trials):
         drawer.reset_meter(0)

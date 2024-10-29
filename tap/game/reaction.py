@@ -3,16 +3,19 @@ import random
 
 from tap.game import constants
 from tap.game.drawer import Drawer
-from tap.classes import GameState, ErrorMessage, Data
+from tap.classes import GameState, ErrorMessage, Data, Settings
 
 
 class ReactionTest:
-    def __init__(self, drawer: Drawer, data: Data):
+    def __init__(self, drawer: Drawer, data: Data, settings: Settings):
         self.drawer = drawer
         self.data = data
+        self.settings = settings
 
     def start_loop(self):
-        self.drawer.render_text("PRESS SPACEBAR TO START")
+        self.drawer.render_text(
+            self.settings.instruction + "\n\nPRESS SPACEBAR TO START"
+        )
 
         while True:
             for event in pygame.event.get():

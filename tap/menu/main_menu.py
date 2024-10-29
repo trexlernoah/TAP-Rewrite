@@ -6,17 +6,19 @@ import threading
 
 # ! TODO REFACTOR THREADS
 import gc
+import line_profiler
 
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from tap.game import game
 from tap.menu.profile_parameters import ProfileParameters
-from tap.menu.utils import reform_data
+from tap.menu.utils import reform_data, reform_intensities
 from tap.menu.subject_threshold import SubjectThreshold
 from tap.classes import Settings, ThreadHandler
 
 
 class MainMenu(threading.Thread):
+    @line_profiler.profile
     def __init__(self, thread_handler: ThreadHandler) -> None:
         super(MainMenu, self).__init__(target=self.run)
         self.start()
@@ -76,6 +78,7 @@ class MainMenu(threading.Thread):
             return
         if not self.settings.subject_id:
             self.show_message("You must set the subject ID!")
+            return
 
         if official:
             self.run_official(self.settings.trials)
@@ -87,18 +90,6 @@ class MainMenu(threading.Thread):
             "This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module."
         )
         print(self.settings)
-
-    def set_options(self):
-        options = tk.Toplevel(self.window)
-        options.geometry("400x200")
-        options.title("Options")
-
-        options_tab = ttk.Notebook(options)
-        threshold_options = ttk.Frame(options_tab)
-        timing_options = ttk.Frame(options_tab)
-
-        options_tab.add(threshold_options, text="Threshold Options")
-        options_tab.add(timing_options, text="Timing")
 
     def set_subject_threshold(self):
         if not self.settings.trials:
@@ -119,16 +110,19 @@ class MainMenu(threading.Thread):
         if trial_count is not None:
             self.profile_parameters(trial_count)
 
+    @line_profiler.profile
     def profile_parameters(self, trial_count: int, edit=False):
         def ok():
             try:
                 data = profile_parameters.get_data()
-                trials = [reform_data(x) for x in data]
+                trials = [reform_data(x) for x in data[0]]
+                intensities = [reform_intensities(x) for x in data[1]]
 
-                if None in trials:
+                if None in trials or None in intensities or len(intensities) != 10:
                     raise ValueError("Malformed data.")
 
                 self.settings.trials = trials
+                self.settings.intensities = intensities
                 profile_parameters_window.destroy()
                 self.display_trials()
 
@@ -207,6 +201,7 @@ class MainMenu(threading.Thread):
             self.window = None
             gc.collect()
 
+    @line_profiler.profile
     def run(self):
         window = tk.Tk()
         window.title("TAP Python Edition")
@@ -284,7 +279,6 @@ class MainMenu(threading.Thread):
         threshold_menu.add_command(
             label="Set Subject Threshold", command=self.set_subject_threshold
         )
-        threshold_menu.add_command(label="Options")
 
         # Ask to close
         self.window.protocol("WM_DELETE_WINDOW", self.ask_to_exit)

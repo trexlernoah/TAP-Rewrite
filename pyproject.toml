@@ -17,6 +17,7 @@ classifiers = [
 ]
 dependencies = [
     "pygame",
+    "ptext",
     "tksheet",
     "nidaqmx",
     "pandas",

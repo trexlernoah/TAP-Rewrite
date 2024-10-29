@@ -1,6 +1,9 @@
 import time
 import threading
 import nidaqmx
+import queue
+
+import line_profiler
 
 from tap.classes import ThreadHandler, ShockTask
 
@@ -14,7 +17,6 @@ class DAQ(threading.Thread):
         self.pin = pin
         self.analog_ouput_name = device_name + "/" + pin
 
-        self.running = True
         self.start()
 
         # self.task = nidaqmx.Task("shock_task")
@@ -36,30 +38,68 @@ class DAQ(threading.Thread):
         print("Stopping shock")
         time.sleep(cooldown)
 
+    def current_to_volts(self, mA: float) -> float:
+        if mA > 5.0 or mA < 0.0:
+            return 0.0
+        return mA / 2
+
     def run(self):
         while not self.thread_handler.kill_event.is_set():
             self.watch_queue()
 
+    @line_profiler.profile
     def watch_queue(self):
         while (
             not self.thread_handler.halt_event.is_set()
             and not self.thread_handler.kill_event.is_set()
         ):
-            # see if this behavior exists with queue.get()
-            if self.thread_handler.task_queue.empty():
-                continue
+            try:
+                # See if there is an event listener
+                # Getting rid of timeout and setting block=False results in too much processing in this while loop
+                task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
+                print(task)
+            except queue.Empty:
+                pass
+            else:
+                print("Sending shock of %f" % task.shock)
+                volts = self.current_to_volts(task.shock)
 
-            task: ShockTask = self.thread_handler.task_queue.get()
-            print(task)
+                try:
+                    # with nidaqmx.Task() as task:
+                    #     task.ao_channels.add_ao_voltage_chan("Dev1/ao0")
+                    #     task.start()
+                    #     task.write(volts)
+                    #     task.stop()
 
-            print("Sending shock of %f" % task.shock)
-            print(self.thread_handler.halt_event.is_set())
-            self.thread_handler.halt_event.wait(task.duration)
-            print("Stopping shock")
-            self.thread_handler.halt_event.wait(task.cooldown)
+                    # with nidaqmx.Task() as task:
+                    #     task.do_channels.add_do_chan("Dev1/port0/line0:0")
+                    #     task.start()
+                    #     task.write(True)
+                    #     task.stop()
 
-            # self.test(task.shock, task.duration, task.cooldown)
-            self.thread_handler.task_queue.task_done()
+                    self.thread_handler.halt_event.wait(task.duration)
+                    print("Stopping shock")
+
+                    # with nidaqmx.Task() as task:
+                    #     task.do_channels.add_do_chan("Dev1/port0/line0:0")
+                    #     task.start()
+                    #     task.write(False)
+                    #     task.stop()
+
+                    # with nidaqmx.Task() as task:
+                    #     task.ao_channels.add_ao_voltage_chan("Dev1/ao0")
+                    #     task.start()
+                    #     task.write(0.0)
+                    #     task.stop()
+
+                    self.thread_handler.halt_event.wait(task.cooldown)
+                except Exception as e:
+                    print("EXCEPTION %s" % e)
+                    self.thread_handler.halt_event.set()
+
+                # self.test(task.shock, task.duration, task.cooldown)
+                self.thread_handler.task_queue.task_done()
+                print("task done")
         # Clean up here
         self.thread_handler.task_queue.clear()
         self.thread_handler.halt_event.clear()
