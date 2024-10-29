@@ -1,12 +1,11 @@
-Subject: 999
+Subject: 123
 
 Trial	W/L	Shock Intensity	Shock Duration	Reaction Time
-1	L	---	-----	297
-2	W	10	34	387
+1	L	---	-----	336
 
 
 Waited too long to press: 0 time(s)
 Waited too long to release: 0 time(s)
-Released spacebar too soon: 0 time(s)
-Waited too long to shock: 1 time(s)
+Released spacebar too soon: 1 time(s)
+Waited too long to shock: 0 time(s)
 Held shock button too long: 0 time(s)

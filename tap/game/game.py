@@ -40,10 +40,9 @@ def play(thread_handler: ThreadHandler, settings: Settings, trials: List[Trial])
     # drawer.render_text(settings.instruction, delay=10000)
 
     for i, trial in enumerate(trials):
-        drawer.reset_meter(0)
-
         reaction_data = react_mngr.run(i == 0)
         if not reaction_data:
+            # TODO throw error
             break
 
         wl = trial.wl == "Win"
@@ -59,6 +58,14 @@ def play(thread_handler: ThreadHandler, settings: Settings, trials: List[Trial])
 
         main_data.finish_trial()
 
+    drawer.render_instruction("Please wait for further instructions.")
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_c and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                    running = False
     pygame.quit()
 
     return main_data

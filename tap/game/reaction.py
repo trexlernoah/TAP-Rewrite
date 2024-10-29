@@ -13,7 +13,7 @@ class ReactionTest:
         self.settings = settings
 
     def start_loop(self):
-        self.drawer.render_text(
+        self.drawer.render_instruction(
             self.settings.instruction + "\n\nPRESS SPACEBAR TO START"
         )
 
@@ -24,7 +24,8 @@ class ReactionTest:
                     return True
 
     def ready_loop(self):
-        self.drawer.render_text("GET READY!", 3700)
+        self.drawer.reset_meter(0)
+        self.drawer.render_text("GET READY!", delay=3700)
         self.drawer.render_text("PRESS SPACEBAR")
 
         timer_start = pygame.time.get_ticks()
@@ -55,12 +56,12 @@ class ReactionTest:
             for event in pygame.event.get():
                 if event.type == pygame.TEXTINPUT and event.text == " ":
                     if current_time > timer_release + 1000:
-                        self.drawer.render_text("YOU WAITED TOO LONG", 3700)
+                        self.drawer.render_text("YOU WAITED TOO LONG", delay=3700)
                         self.data.add_error(ErrorMessage.WAIT_TOO_LONG)
                         return False
                 elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
                     if current_time < timer_release:
-                        self.drawer.render_text("YOU RELEASED TOO SOON", 3700)
+                        self.drawer.render_text("YOU RELEASED TOO SOON", delay=3700)
                         self.data.add_error(ErrorMessage.RELEASE_TOO_SOON)
                         return False
                     else:

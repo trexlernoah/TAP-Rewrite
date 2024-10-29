@@ -65,32 +65,36 @@ class DAQ(threading.Thread):
                 volts = self.current_to_volts(task.shock)
 
                 try:
-                    # with nidaqmx.Task() as task:
-                    #     task.ao_channels.add_ao_voltage_chan("Dev1/ao0")
-                    #     task.start()
-                    #     task.write(volts)
-                    #     task.stop()
+                    with nidaqmx.Task() as task:
+                        task.ao_channels.add_ao_voltage_chan(
+                            "Dev1/ao0", min_val=0.0, max_val=2.5
+                        )
+                        task.start()
+                        task.write(volts)
+                        task.stop()
 
-                    # with nidaqmx.Task() as task:
-                    #     task.do_channels.add_do_chan("Dev1/port0/line0:0")
-                    #     task.start()
-                    #     task.write(True)
-                    #     task.stop()
+                    with nidaqmx.Task() as task:
+                        task.do_channels.add_do_chan("Dev1/port0/line0:0")
+                        task.start()
+                        task.write(True)
+                        task.stop()
 
                     self.thread_handler.halt_event.wait(task.duration)
                     print("Stopping shock")
 
-                    # with nidaqmx.Task() as task:
-                    #     task.do_channels.add_do_chan("Dev1/port0/line0:0")
-                    #     task.start()
-                    #     task.write(False)
-                    #     task.stop()
+                    with nidaqmx.Task() as task:
+                        task.do_channels.add_do_chan("Dev1/port0/line0:0")
+                        task.start()
+                        task.write(False)
+                        task.stop()
 
-                    # with nidaqmx.Task() as task:
-                    #     task.ao_channels.add_ao_voltage_chan("Dev1/ao0")
-                    #     task.start()
-                    #     task.write(0.0)
-                    #     task.stop()
+                    with nidaqmx.Task() as task:
+                        task.ao_channels.add_ao_voltage_chan(
+                            "Dev1/ao0", min_val=0.0, max_val=2.5
+                        )
+                        task.start()
+                        task.write(0.0)
+                        task.stop()
 
                     self.thread_handler.halt_event.wait(task.cooldown)
                 except Exception as e:
