@@ -112,6 +112,7 @@ class SubjectThreshold(tk.Toplevel):
         subwindow.geometry("400x200")
         subwindow.resizable(False, False)
         subwindow.title("Set Threshold")
+        subwindow.protocol("WM_DELETE_WINDOW", stop)
 
         desc = tk.Label(subwindow, text="Administering shocks")
         desc.pack(pady=20)
@@ -138,7 +139,8 @@ class SubjectThreshold(tk.Toplevel):
         shock_vals = range(min, max, 75)
 
         for s in shock_vals:
-            self.thread_handler.task_queue.put(ShockTask(s, 1, 3.5))
+            shock = s / 1000
+            self.thread_handler.task_queue.put(ShockTask(shock, 1, 3.5))
 
         update()
 

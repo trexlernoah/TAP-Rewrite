@@ -39,6 +39,8 @@ class DAQ(threading.Thread):
         time.sleep(cooldown)
 
     def current_to_volts(self, mA: float) -> float:
+        # TODO bad
+        # mA = mA / 1000
         if mA > 5.0 or mA < 0.0:
             return 0.0
         return mA / 2
@@ -56,13 +58,14 @@ class DAQ(threading.Thread):
             try:
                 # See if there is an event listener
                 # Getting rid of timeout and setting block=False results in too much processing in this while loop
-                task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
-                print(task)
+                shock_task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
+                print(shock_task)
             except queue.Empty:
                 pass
             else:
-                print("Sending shock of %f" % task.shock)
-                volts = self.current_to_volts(task.shock)
+                print("Sending shock of %f" % shock_task.shock)
+                volts = self.current_to_volts(shock_task.shock)
+                print(f"volts: {volts} V")
 
                 try:
                     with nidaqmx.Task() as task:
@@ -79,7 +82,7 @@ class DAQ(threading.Thread):
                         task.write(True)
                         task.stop()
 
-                    self.thread_handler.halt_event.wait(task.duration)
+                    self.thread_handler.halt_event.wait(shock_task.duration)
                     print("Stopping shock")
 
                     with nidaqmx.Task() as task:
@@ -96,7 +99,7 @@ class DAQ(threading.Thread):
                         task.write(0.0)
                         task.stop()
 
-                    self.thread_handler.halt_event.wait(task.cooldown)
+                    self.thread_handler.halt_event.wait(shock_task.cooldown)
                 except Exception as e:
                     print("EXCEPTION %s" % e)
                     self.thread_handler.halt_event.set()
