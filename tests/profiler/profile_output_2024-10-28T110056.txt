@@ -1,0 +1,154 @@
+Timer unit: 1e-09 s
+
+Total time: 0.05006 s
+File: /home/noah/Desktop/vasu/TAP-Rewrite/tap/menu/main_menu.py
+Function: __init__ at line 21
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    21                                               @line_profiler.profile
+    22                                               def __init__(self, thread_handler: ThreadHandler) -> None:
+    23         1      50893.0  50893.0      0.1          super(MainMenu, self).__init__(target=self.run)
+    24         1   49992464.0    5e+07     99.9          self.start()
+    25                                           
+    26         1       2822.0   2822.0      0.0          self.thread_handler = thread_handler
+    27                                           
+    28         1      13855.0  13855.0      0.0          self.settings = Settings()
+
+Total time: 9.17728 s
+File: /home/noah/Desktop/vasu/TAP-Rewrite/tap/daq.py
+Function: watch_queue at line 47
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    47                                               @line_profiler.profile
+    48                                               def watch_queue(self):
+    49                                                   while (
+    50   1941264 1077919283.0    555.3     11.7              not self.thread_handler.halt_event.is_set()
+    51   1941264 1018659531.0    524.7     11.1              and not self.thread_handler.kill_event.is_set()
+    52                                                   ):
+    53   1941263  327035790.0    168.5      3.6              try:
+    54   1941263 5704708722.0   2938.7     62.2                  task: ShockTask = self.thread_handler.task_queue.get(False)
+    55                                                           print(task)
+    56   1941263  498459909.0    256.8      5.4              except queue.Empty:
+    57   1941263  550466297.0    283.6      6.0                  pass
+    58                                                       else:
+    59                                                           print("Sending shock of %f" % task.shock)
+    60                                                           print(self.thread_handler.halt_event.is_set())
+    61                                                           self.thread_handler.halt_event.wait(task.duration)
+    62                                                           print("Stopping shock")
+    63                                                           self.thread_handler.halt_event.wait(task.cooldown)
+    64                                           
+    65                                                           # self.test(task.shock, task.duration, task.cooldown)
+    66                                                           self.thread_handler.task_queue.task_done()
+    67                                                   # Clean up here
+    68         1      26108.0  26108.0      0.0          self.thread_handler.task_queue.clear()
+    69         1       8010.0   8010.0      0.0          self.thread_handler.halt_event.clear()
+
+Total time: 12.2304 s
+File: /home/noah/Desktop/vasu/TAP-Rewrite/tap/daq.py
+Function: run at line 42
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    42                                               @line_profiler.profile
+    43                                               def run(self):
+    44         2       4794.0   2397.0      0.0          while not self.thread_handler.kill_event.is_set():
+    45         1        1e+10    1e+10    100.0              self.watch_queue()
+
+Total time: 12.3108 s
+File: /home/noah/Desktop/vasu/TAP-Rewrite/tap/menu/main_menu.py
+Function: run at line 213
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   213                                               @line_profiler.profile
+   214                                               def run(self):
+   215         1   65936552.0    7e+07      0.5          window = tk.Tk()
+   216         1       9217.0   9217.0      0.0          window.title("TAP Python Edition")
+   217         1    5104561.0    5e+06      0.0          window.geometry("500x500")
+   218         1      29411.0  29411.0      0.0          window.resizable(width=True, height=True)
+   219                                           
+   220         1       1325.0   1325.0      0.0          self.window = window
+   221                                           
+   222                                                   # Cofigure sizing for rows and columns
+   223         1    5219610.0    5e+06      0.0          self.window.rowconfigure(1, minsize=800, weight=1)
+   224         1    5153074.0    5e+06      0.0          self.window.columnconfigure(0, minsize=800, weight=1)
+   225                                           
+   226                                                   # Menu bar
+   227         1   16833511.0    2e+07      0.1          menubar = tk.Menu(self.window)
+   228         1    7334409.0    7e+06      0.1          self.window.config(menu=menubar)
+   229                                           
+   230                                                   # Menu options in menu bar
+   231         1    5216001.0    5e+06      0.0          experiment_menu = tk.Menu(menubar, tearoff=0)
+   232         1    5160176.0    5e+06      0.0          open_experiment_menu = tk.Menu(menubar, tearoff=0)
+   233         1    5147860.0    5e+06      0.0          create_new_menu = tk.Menu(menubar, tearoff=0)
+   234         1    5152203.0    5e+06      0.0          edit_current_menu = tk.Menu(experiment_menu, tearoff=0)
+   235         1    5156987.0    5e+06      0.0          run_menu = tk.Menu(experiment_menu, tearoff=0)
+   236                                           
+   237                                                   # Create main menu
+   238         1    5173827.0    5e+06      0.0          threshold_menu = tk.Menu(menubar, tearoff=0)
+   239                                           
+   240                                                   # Main menu options
+   241         1    5240510.0    5e+06      0.0          menubar.add_cascade(menu=experiment_menu, label="Experiment")
+   242         1    5211641.0    5e+06      0.0          menubar.add_cascade(menu=threshold_menu, label="Threshold")
+   243         1    5157816.0    5e+06      0.0          menubar.add_command(label="About", command=self.show_about_info)
+   244                                           
+   245                                                   # Experiment dropdown menu options
+   246         1    5195332.0    5e+06      0.0          experiment_menu.add_cascade(label="Create New", menu=create_new_menu)
+   247                                                   # Open experiment
+   248         2   10342033.0    5e+06      0.1          experiment_menu.add_command(
+   249         1      15734.0  15734.0      0.0              label="Open Experiment", command=self.open_experiment
+   250                                                   )
+   251                                           
+   252                                                   # "Create New" dropdown menu options
+   253         2   10277207.0    5e+06      0.1          create_new_menu.add_command(
+   254         1       1665.0   1665.0      0.0              label="Instruction", command=self.create_new_instruction
+   255                                                   )
+   256         1    5191310.0    5e+06      0.0          create_new_menu.add_command(label="Experiment", command=self.get_trial_count)
+   257                                           
+   258                                                   # "Edit Current" dropdown menu options
+   259         1    5203818.0    5e+06      0.0          experiment_menu.add_cascade(label="Edit Current", menu=edit_current_menu)
+   260         2   10344985.0    5e+06      0.1          edit_current_menu.add_command(
+   261         1       1005.0   1005.0      0.0              label="Instruction",
+   262         1       5536.0   5536.0      0.0              command=lambda: self.create_new_instruction(self.settings.instruction),
+   263                                                   )
+   264         2   10281147.0    5e+06      0.1          edit_current_menu.add_command(
+   265         1        649.0    649.0      0.0              label="Experiment",
+   266         1       1052.0   1052.0      0.0              command=lambda: self.profile_parameters(
+   267                                                           len(self.settings.trials), edit=True
+   268                                                       ),
+   269                                                   )
+   270         1    5121983.0    5e+06      0.0          experiment_menu.add_separator()
+   271                                           
+   272                                                   # "Save Experiment" dropdown menu option
+   273         2   10219234.0    5e+06      0.1          experiment_menu.add_command(
+   274         1       1504.0   1504.0      0.0              label="Save Experiment", command=self.save_experiment
+   275                                                   )
+   276         1    5131998.0    5e+06      0.0          experiment_menu.add_separator()
+   277                                           
+   278                                                   # Run dropdown menu options
+   279         1    5283913.0    5e+06      0.0          experiment_menu.add_cascade(label="Run", menu=run_menu)
+   280         1    5124137.0    5e+06      0.0          run_menu.add_command(label="Practice")
+   281         1    5183229.0    5e+06      0.0          run_menu.add_command(label="Official", command=self.run_experiment)
+   282         1    5122330.0    5e+06      0.0          experiment_menu.add_separator()
+   283                                           
+   284                                                   # Exit dropdown menu option
+   285         1    5136834.0    5e+06      0.0          experiment_menu.add_command(label="Exit", command=self.ask_to_exit)
+   286                                           
+   287                                                   # Threshold dropdown menu options
+   288         2    5137797.0    3e+06      0.0          threshold_menu.add_command(
+   289         1       1113.0   1113.0      0.0              label="Set Subject Threshold", command=self.set_subject_threshold
+   290                                                   )
+   291         1    5124775.0    5e+06      0.0          threshold_menu.add_command(label="Options")
+   292                                           
+   293                                                   # Ask to close
+   294         1    5128586.0    5e+06      0.0          self.window.protocol("WM_DELETE_WINDOW", self.ask_to_exit)
+   295                                           
+   296                                                   # Start menu
+   297         1        1e+10    1e+10     97.8          self.window.mainloop()
+
+  0.05 seconds - /home/noah/Desktop/vasu/TAP-Rewrite/tap/menu/main_menu.py:21 - __init__
+  9.18 seconds - /home/noah/Desktop/vasu/TAP-Rewrite/tap/daq.py:47 - watch_queue
+ 12.23 seconds - /home/noah/Desktop/vasu/TAP-Rewrite/tap/daq.py:42 - run
+ 12.31 seconds - /home/noah/Desktop/vasu/TAP-Rewrite/tap/menu/main_menu.py:213 - run

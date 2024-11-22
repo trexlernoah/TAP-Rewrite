@@ -1,2 +1,5 @@
 /.venv
 /.venv/*
+/src/game/__pycache__/
+/src/data/__pycache__/
+/src/menu/__pycache__/
