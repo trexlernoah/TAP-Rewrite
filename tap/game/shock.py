@@ -32,7 +32,7 @@ class ShockMeter:
         shock_mA = ((m * shock) + lower_threshold) * (intensity / 100)
         print(shock_mA)
 
-        self.thread_handler.task_queue.put(ShockTask(shock_mA, feedback, 1))
+        self.thread_handler.task_queue.put(ShockTask(shock_mA, 1, 1))
 
     def lose_loop(self, shock: int, feedback: int):
         self.drawer.render_text("YOU LOST! YOU GET A SHOCK", delay=2400)

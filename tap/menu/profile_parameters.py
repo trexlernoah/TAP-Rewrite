@@ -7,7 +7,12 @@ from tap.classes import Trial
 
 class ProfileParameters(tk.Frame):
     def __init__(
-        self, master, rows: int, initial_data: List[Trial] = None, readonly=False
+        self,
+        master,
+        rows: int,
+        trials: List[Trial] = None,
+        intensities: List[int] = None,
+        readonly=False,
     ):
         self.rows = rows
 
@@ -41,8 +46,8 @@ class ProfileParameters(tk.Frame):
         self.sheet.dropdown("B", values=list(range(1, 11)), set_value="")
         self.sheet.dropdown("C", values=list(range(1, 11)), set_value="")
 
-        if initial_data is not None:
-            for i, trial in enumerate(initial_data):
+        if trials is not None:
+            for i, trial in enumerate(trials):
                 self.sheet[i].data = [trial.wl, trial.shock, trial.feedback]
                 self.enable_dropdowns(
                     # Pass anonymous event object with value and row attributes
@@ -51,7 +56,7 @@ class ProfileParameters(tk.Frame):
 
         self.intensities = Sheet(
             self.frame2,
-            data=[[i * 10] for i in range(1, 11)],
+            data=[[i * 5] for i in range(11, 21)],
             theme="light blue",
             height=520,
             width=480,
@@ -61,6 +66,10 @@ class ProfileParameters(tk.Frame):
         )
         self.intensities.headers(["Intensity"])
         self.intensities.align_columns(columns=0, align="c")
+
+        if intensities is not None:
+            for i, intensity in enumerate(intensities):
+                self.intensities[i].data = str(intensity)
 
         self.frame1.grid(row=0, column=0, sticky="nswe")
         self.frame2.grid(row=0, column=0, sticky="nswe")
