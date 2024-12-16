@@ -40,7 +40,7 @@ def play(thread_handler: ThreadHandler, settings: Settings, trials: List[Trial])
     for i, trial in enumerate(trials):
         reaction_data = react_mngr.run(i == 0)
         if not reaction_data:
-            break
+            return main_data
 
         wl = trial.wl == "Win"
         main_data.current_data_row.wl = "W" if wl else "L"

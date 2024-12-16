@@ -176,12 +176,12 @@ Maximum shock intensity is 2.475 mA.
         if not file:
             return
         try:
-            self.settings.working_directory = pathlib.Path(file).parent.resolve()
+            self.settings.working_directory = pathlib.Path(file.name).parent.resolve()
             self.settings.filename = file.name
             pickle.dump(dataclasses.asdict(self.settings), file)
-            file.close()
         except Exception:
             self.show_message("There was an error saving the file.")
+        file.close()
 
     def open_experiment(self):
         filetypes = [("TAP files", "*.tap"), ("All files", "*.*")]
@@ -194,11 +194,11 @@ Maximum shock intensity is 2.475 mA.
             settings_dict = pickle.load(file)
             self.settings = Settings(**settings_dict)  # Double asterick for kwargs
             self.settings.filename = file.name
-            self.settings.working_directory = pathlib.Path(file).parent.resolve()
+            self.settings.working_directory = pathlib.Path(file.name).parent.resolve()
             self.display_trials()
-            file.close()
         except Exception:
             self.show_message("There was an error opening the file.")
+        file.close()
 
     def show_message(self, message: str):
         messagebox.showinfo("Notification", message)

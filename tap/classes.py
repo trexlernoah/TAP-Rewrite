@@ -34,8 +34,8 @@ class Trial(typing.NamedTuple):
 
 class ShockTask(typing.NamedTuple):
     shock: float
-    duration: int
-    cooldown: int
+    duration: float
+    cooldown: float
 
 
 @dataclass
