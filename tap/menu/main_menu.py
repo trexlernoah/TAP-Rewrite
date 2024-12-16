@@ -1,14 +1,15 @@
 import os
+import pathlib
 import pickle
 import tkinter as tk
 import dataclasses
 import threading
+import webbrowser
 
-# ! TODO REFACTOR THREADS
 import gc
 import line_profiler
 
-from tkinter import filedialog, messagebox, simpledialog, ttk
+from tkinter import filedialog, messagebox, simpledialog
 
 from tap.game import game
 from tap.menu.profile_parameters import ProfileParameters
@@ -69,10 +70,7 @@ class MainMenu(threading.Thread):
             return
         data.save_data(os.getcwd(), self.settings.subject_id)
 
-    def run_practice(self, trials):
-        return
-
-    def run_experiment(self, official=True):
+    def run_experiment(self):
         if len(self.settings.trials) <= 0:
             self.show_message("You must set the number of trials!")
             return
@@ -80,14 +78,19 @@ class MainMenu(threading.Thread):
             self.show_message("You must set the subject ID!")
             return
 
-        if official:
-            self.run_official(self.settings.trials)
-        else:
-            self.run_practice(self.settings.trials)
+        self.run_official(self.settings.trials)
+
+    def documentation(self):
+        return
 
     def show_about_info(self):
         self.show_message(
-            "This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module."
+            """This is a rewrite of the TAP software in Python using the NI DAQ USB-6001 Module.
+
+To exit the program, press CTRL-C.
+
+Maximum shock intensity is 2.475 mA.
+            """
         )
         print(self.settings)
 
@@ -141,6 +144,7 @@ class MainMenu(threading.Thread):
             profile_parameters_window,
             trial_count,
             (self.settings.trials if edit else None),
+            (self.settings.intensities if edit else None),
         )
 
         ok_btn = tk.Button(
@@ -152,7 +156,11 @@ class MainMenu(threading.Thread):
 
     def display_trials(self):
         ProfileParameters(
-            self.window, len(self.settings.trials), self.settings.trials, readonly=True
+            self.window,
+            len(self.settings.trials),
+            self.settings.trials,
+            self.settings.intensities,
+            readonly=True,
         )
 
     ### File utilities
@@ -168,11 +176,12 @@ class MainMenu(threading.Thread):
         if not file:
             return
         try:
+            self.settings.working_directory = pathlib.Path(file.name).parent.resolve()
             self.settings.filename = file.name
             pickle.dump(dataclasses.asdict(self.settings), file)
-            file.close()
         except Exception:
             self.show_message("There was an error saving the file.")
+        file.close()
 
     def open_experiment(self):
         filetypes = [("TAP files", "*.tap"), ("All files", "*.*")]
@@ -185,10 +194,11 @@ class MainMenu(threading.Thread):
             settings_dict = pickle.load(file)
             self.settings = Settings(**settings_dict)  # Double asterick for kwargs
             self.settings.filename = file.name
+            self.settings.working_directory = pathlib.Path(file.name).parent.resolve()
             self.display_trials()
-            file.close()
         except Exception:
             self.show_message("There was an error opening the file.")
+        file.close()
 
     def show_message(self, message: str):
         messagebox.showinfo("Notification", message)
@@ -220,7 +230,6 @@ class MainMenu(threading.Thread):
 
         # Menu options in menu bar
         experiment_menu = tk.Menu(menubar, tearoff=0)
-        open_experiment_menu = tk.Menu(menubar, tearoff=0)
         create_new_menu = tk.Menu(menubar, tearoff=0)
         edit_current_menu = tk.Menu(experiment_menu, tearoff=0)
         run_menu = tk.Menu(experiment_menu, tearoff=0)
@@ -232,6 +241,12 @@ class MainMenu(threading.Thread):
         menubar.add_cascade(menu=experiment_menu, label="Experiment")
         menubar.add_cascade(menu=threshold_menu, label="Threshold")
         menubar.add_command(label="About", command=self.show_about_info)
+        menubar.add_command(
+            label="Docs",
+            command=lambda: webbrowser.open_new(
+                "https://github.com/trexlernoah/TAP-Rewrite/blob/main/README.md"
+            ),
+        )
 
         # Experiment dropdown menu options
         experiment_menu.add_cascade(label="Create New", menu=create_new_menu)
@@ -268,7 +283,6 @@ class MainMenu(threading.Thread):
 
         # Run dropdown menu options
         experiment_menu.add_cascade(label="Run", menu=run_menu)
-        run_menu.add_command(label="Practice")
         run_menu.add_command(label="Official", command=self.run_experiment)
         experiment_menu.add_separator()
 

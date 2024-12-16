@@ -1,7 +1,7 @@
+import os
 import typing
 import queue
 
-# import os
 import pandas as pd
 import numpy as np
 
@@ -33,10 +33,9 @@ class Trial(typing.NamedTuple):
 
 
 class ShockTask(typing.NamedTuple):
-    # ! TODO use decimals
     shock: float
-    duration: int
-    cooldown: int
+    duration: float
+    cooldown: float
 
 
 @dataclass
@@ -85,14 +84,11 @@ class Data:
             error_data[error.name] += 1
         return error_data
 
-    def save_data(self, cwd: str, subject_id: str):
-        if not cwd:
-            return
+    def save_data(self, wd: str, subject_id: str):
+        if not wd:
+            wd = os.path.dirname(os.path.realpath(__file__))
 
-        filename = f"{cwd}/data/{subject_id}.dat"
-
-        # if os.path.exists(filename):
-        #     filename = f"{cwd}/data/{subject_id}.dat"
+        filename = f"{wd}/{subject_id}.dat"
 
         data = self.get_data_frame()
         data.to_csv(filename, sep="\t", encoding="utf-8", index=False)
@@ -112,9 +108,10 @@ class Data:
 @dataclass(kw_only=True)
 class Settings:
     filename: str = ""
+    working_directory: str = ""
     subject_id: str = ""
-    lower_threshold: int = 0
-    higher_threshold: int = 0
+    lower_threshold: float = 0.0
+    higher_threshold: float = 0.0
     instruction: str = ""
     intensities: List[int] = field(default_factory=list)
     trials: List[Trial] = field(default_factory=list)

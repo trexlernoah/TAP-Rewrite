@@ -19,29 +19,23 @@ class DAQ(threading.Thread):
 
         self.start()
 
-        # self.task = nidaqmx.Task("shock_task")
-        # self.task.ao_channels.add_ao_voltage_chan(self.analog_ouput_name, 0, 5)
-
-    # TODO convert to decimal
     def shock(self, value: float, duration: int):
+        # Failsafe for out-of-bounds values
         if value > 0.75:
             value = 0.75
-        # if value < 0
+        if value < 0.0:
+            value = 0.0
         self.task.start()
         self.task.write(value)
         time.sleep(duration)
         self.task.stop()
 
-    def test(self, value: float, duration: int, cooldown: int):
-        print("Sending shock of %f" % value)
-        time.sleep(duration)
-        print("Stopping shock")
-        time.sleep(cooldown)
-
     def current_to_volts(self, mA: float) -> float:
-        if mA > 5.0 or mA < 0.0:
+        volts = mA / 2
+        # Failsafe for out-of-bounds values
+        if volts > 5.0 or volts < 0.0:
             return 0.0
-        return mA / 2
+        return volts
 
     def run(self):
         while not self.thread_handler.kill_event.is_set():
@@ -56,13 +50,11 @@ class DAQ(threading.Thread):
             try:
                 # See if there is an event listener
                 # Getting rid of timeout and setting block=False results in too much processing in this while loop
-                task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
-                print(task)
+                shock_task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
             except queue.Empty:
                 pass
             else:
-                print("Sending shock of %f" % task.shock)
-                volts = self.current_to_volts(task.shock)
+                volts = self.current_to_volts(shock_task.shock)
 
                 try:
                     with nidaqmx.Task() as task:
@@ -79,8 +71,7 @@ class DAQ(threading.Thread):
                         task.write(True)
                         task.stop()
 
-                    self.thread_handler.halt_event.wait(task.duration)
-                    print("Stopping shock")
+                    self.thread_handler.halt_event.wait(shock_task.duration)
 
                     with nidaqmx.Task() as task:
                         task.do_channels.add_do_chan("Dev1/port0/line0:0")
@@ -96,14 +87,12 @@ class DAQ(threading.Thread):
                         task.write(0.0)
                         task.stop()
 
-                    self.thread_handler.halt_event.wait(task.cooldown)
+                    self.thread_handler.halt_event.wait(shock_task.cooldown)
                 except Exception as e:
                     print("EXCEPTION %s" % e)
                     self.thread_handler.halt_event.set()
 
-                # self.test(task.shock, task.duration, task.cooldown)
                 self.thread_handler.task_queue.task_done()
-                print("task done")
         # Clean up here
         self.thread_handler.task_queue.clear()
         self.thread_handler.halt_event.clear()
