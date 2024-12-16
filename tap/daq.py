@@ -51,11 +51,10 @@ class DAQ(threading.Thread):
                 # See if there is an event listener
                 # Getting rid of timeout and setting block=False results in too much processing in this while loop
                 shock_task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
-                print(shock_task)
             except queue.Empty:
                 pass
             else:
-                volts = self.current_to_volts(task.shock)
+                volts = self.current_to_volts(shock_task.shock)
 
                 try:
                     with nidaqmx.Task() as task:
@@ -72,7 +71,7 @@ class DAQ(threading.Thread):
                         task.write(True)
                         task.stop()
 
-                    self.thread_handler.halt_event.wait(task.duration)
+                    self.thread_handler.halt_event.wait(shock_task.duration)
 
                     with nidaqmx.Task() as task:
                         task.do_channels.add_do_chan("Dev1/port0/line0:0")

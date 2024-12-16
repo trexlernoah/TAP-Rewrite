@@ -145,8 +145,7 @@ class SubjectThreshold(tk.Toplevel):
         shock_vals = [x / 1000 for x in range(int(min * 1000), int(max * 1000), 75)]
 
         for s in shock_vals:
-            shock = s / 1000
-            self.thread_handler.task_queue.put(ShockTask(shock, 1, 3.5))
+            self.thread_handler.task_queue.put(ShockTask(s, 1, 3.5))
 
         update()
 
