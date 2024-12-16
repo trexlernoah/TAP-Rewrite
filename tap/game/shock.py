@@ -2,6 +2,7 @@ import pygame
 
 
 from tap.game.drawer import Drawer
+from tap.game.utils import get_shock_value
 from tap.classes import ErrorMessage, Data, Settings, ThreadHandler, ShockTask
 
 
@@ -18,19 +19,16 @@ class ShockMeter:
         self.drawer = drawer
         self.data = data
 
-    def generate_shock(self, shock: int, feedback: int):
+    def generate_shock(self, shock: int):
         if shock >= 10 or shock <= 0:
             shock = 10
 
-        # TODO move this somewhere else?
-        intensity = self.settings.intensities[shock - 1]
-        lower_threshold = self.settings.lower_threshold / 1000
-        higher_threshold = self.settings.higher_threshold / 1000
-        m = (higher_threshold - lower_threshold) / 10
-        print(f"{lower_threshold} - {higher_threshold} -> {m}")
-        print(f"intensity {intensity}")
-        shock_mA = ((m * shock) + lower_threshold) * (intensity / 100)
-        print(shock_mA)
+        shock_mA = get_shock_value(
+            self.settings.lower_threshold,
+            self.settings.higher_threshold,
+            self.settings.intensities,
+            shock,
+        )
 
         self.thread_handler.task_queue.put(ShockTask(shock_mA, 1, 1))
 
@@ -40,8 +38,7 @@ class ShockMeter:
             shock = 10
         key = 48 + shock
         self.drawer.draw_meter(key)
-        # TODO send shock here
-        self.generate_shock(shock, feedback)
+        self.generate_shock(shock)
         self.drawer.render_text("", delay=feedback * 1000)
         self.drawer.reset_meter(key)
         return True

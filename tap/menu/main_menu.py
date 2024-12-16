@@ -1,15 +1,15 @@
 import os
+import pathlib
 import pickle
 import tkinter as tk
 import dataclasses
 import threading
 import webbrowser
 
-# ! TODO REFACTOR THREADS
 import gc
 import line_profiler
 
-from tkinter import filedialog, messagebox, simpledialog, ttk
+from tkinter import filedialog, messagebox, simpledialog
 
 from tap.game import game
 from tap.menu.profile_parameters import ProfileParameters
@@ -176,6 +176,7 @@ Maximum shock intensity is 2.475 mA.
         if not file:
             return
         try:
+            self.settings.working_directory = pathlib.Path(file).parent.resolve()
             self.settings.filename = file.name
             pickle.dump(dataclasses.asdict(self.settings), file)
             file.close()
@@ -193,6 +194,7 @@ Maximum shock intensity is 2.475 mA.
             settings_dict = pickle.load(file)
             self.settings = Settings(**settings_dict)  # Double asterick for kwargs
             self.settings.filename = file.name
+            self.settings.working_directory = pathlib.Path(file).parent.resolve()
             self.display_trials()
             file.close()
         except Exception:

@@ -1,4 +1,3 @@
-# import sys
 from threading import Event
 
 from tap.menu.main_menu import MainMenu
