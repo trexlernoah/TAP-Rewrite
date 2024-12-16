@@ -37,12 +37,9 @@ def play(thread_handler: ThreadHandler, settings: Settings, trials: List[Trial])
     react_mngr = ReactionTest(drawer, main_data, settings)
     shock_mngr = ShockMeter(thread_handler, settings, drawer, main_data)
 
-    # drawer.render_text(settings.instruction, delay=10000)
-
     for i, trial in enumerate(trials):
         reaction_data = react_mngr.run(i == 0)
         if not reaction_data:
-            # TODO throw error
             break
 
         wl = trial.wl == "Win"

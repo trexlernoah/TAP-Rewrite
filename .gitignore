@@ -3,3 +3,4 @@
 /src/game/__pycache__/
 /src/data/__pycache__/
 /src/menu/__pycache__/
+*/__pycache__
