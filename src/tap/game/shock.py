@@ -39,7 +39,7 @@ class ShockMeter:
         key = 48 + shock
         self.drawer.draw_meter(key)
         self.generate_shock(shock)
-        self.drawer.render_text("", delay=feedback * 1000)
+        self.drawer.render_text("", delay=1000)
         self.drawer.reset_meter(key)
         return True
 

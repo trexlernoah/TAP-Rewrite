@@ -1,4 +1,3 @@
-README.md
 pyproject.toml
 TAP.egg-info/PKG-INFO
 TAP.egg-info/SOURCES.txt
@@ -13,7 +12,17 @@ tap/game/drawer.py
 tap/game/game.py
 tap/game/reaction.py
 tap/game/shock.py
+tap/game/utils.py
 tap/menu/__init__.py
 tap/menu/main_menu.py
 tap/menu/profile_parameters.py
+tap/menu/subject_threshold.py
 tap/menu/utils.py
+tap/tests/test.py
+tap/tests/test2.py
+tap/tests/tktest.py
+tap/tests/tktest2.py
+tap/tests/tktest3.py
+tap/tests/tktest4.py
+tap/tests/tktest5.py
+tap/tests/tktest6.py
