@@ -1,8 +1,7 @@
 import pygame
-
+import random
 
 from tap.game.drawer import Drawer
-from tap.game.utils import get_shock_value
 from tap.classes import ErrorMessage, Data, Settings, ThreadHandler, ShockTask
 
 
@@ -19,27 +18,61 @@ class ShockMeter:
         self.drawer = drawer
         self.data = data
 
-    def generate_shock(self, shock: int):
+    def get_shock_duration(self) -> float:
+        mn = self.settings.min_shock_duration
+        mx = self.settings.max_shock_duration
+
+        duration = random.randint(mn, mx) / 1000
+
+        if duration > 10.0:
+            duration = 10.0
+        if duration < 0.0:
+            duration = 0.0
+
+        return duration
+
+    def get_shock_value(self, shock):
+        high = self.settings.higher_threshold
+        low = self.settings.lower_threshold
+        intensity = self.settings.intensities[shock - 1]
+
+        if intensity < 0:
+            intensity = 0
+        if intensity > 100:
+            intensity = 100
+
+        m = (high - low) / 10
+
+        shock_mA = ((m * shock) + low) * (intensity / 100)
+
+        return shock_mA
+
+    def generate_shock(self, shock: int, duration: float):
         if shock >= 10 or shock <= 0:
             shock = 10
 
-        shock_mA = get_shock_value(
-            self.settings.lower_threshold,
-            self.settings.higher_threshold,
-            self.settings.intensities,
-            shock,
-        )
+        shock_mA = self.get_shock_value(shock)
 
-        self.thread_handler.task_queue.put(ShockTask(shock_mA, 1, 1))
+        self.thread_handler.task_queue.put(ShockTask(shock_mA, duration, 1))
 
     def lose_loop(self, shock: int, feedback: int):
         self.drawer.render_text("YOU LOST! YOU GET A SHOCK", delay=2400)
-        if shock >= 10 or shock <= 0:
+        if shock > 10:
             shock = 10
-        key = 48 + shock
+        if shock < 0:
+            shock = 0
+        if feedback > 10:
+            feedback = 10
+        if feedback < 0:
+            feedback = 0
+        key = 48 + feedback
         self.drawer.draw_meter(key)
-        self.generate_shock(shock)
-        self.drawer.render_text("", delay=1000)
+
+        duration = self.get_shock_duration()
+
+        self.generate_shock(shock, duration)
+
+        self.drawer.render_text("", delay=int(duration * 1000))
         self.drawer.reset_meter(key)
         return True
 

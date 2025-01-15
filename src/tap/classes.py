@@ -68,11 +68,11 @@ class Data:
 
         df = pd.DataFrame(df)
         df.columns = [
-            "Trial",
-            "W/L",
+            "Trial          ",
+            "W/L            ",
             "Shock Intensity",
-            "Shock Duration",
-            "Reaction Time",
+            "Shock Duration ",
+            "Reaction Time  ",
         ]
 
         return df
@@ -91,6 +91,12 @@ class Data:
         filename = f"{wd}/{subject_id}.dat"
 
         data = self.get_data_frame()
+        print(self.data_rows)
+        print(data)
+
+        for col in data:
+            data[col] = data[col].str[0:].apply("{:15}".format)
+
         data.to_csv(filename, sep="\t", encoding="utf-8", index=False)
 
         errors = self.get_error_data()
@@ -112,6 +118,8 @@ class Settings:
     subject_id: str = ""
     lower_threshold: float = 0.0
     higher_threshold: float = 0.0
+    min_shock_duration: int = 1000
+    max_shock_duration: int = 1000
     instruction: str = ""
     intensities: List[int] = field(default_factory=list)
     trials: List[Trial] = field(default_factory=list)

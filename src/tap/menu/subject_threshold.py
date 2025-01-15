@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 from classes import ThreadHandler, ShockTask, Settings
 
@@ -13,7 +13,7 @@ class SubjectThreshold(tk.Toplevel):
         self.higher_threshold = settings.higher_threshold
 
         self.window = tk.Toplevel(master)
-        self.window.geometry("500x300")
+        self.window.geometry("400x300")
         self.window.title("Subject Threshold")
 
         content = ttk.Frame(self.window, padding=(12, 12, 12, 12))
@@ -21,13 +21,21 @@ class SubjectThreshold(tk.Toplevel):
             content,
             borderwidth=5,
             relief="ridge",
-            width=300,
+            width=400,
             height=300,
             padding=(12, 12, 12, 12),
         )
 
         subject_id_label = ttk.Label(content, text="Subject ID")
         self.subject_id_entry = ttk.Entry(content)
+        self.subject_id_entry.insert(0, str(self.settings.subject_id))
+
+        min_shock_duration = ttk.Label(content, text="Minimum shock duration (ms)")
+        self.min_shock_duration_entry = ttk.Entry(content)
+        self.min_shock_duration_entry.insert(0, str(self.settings.min_shock_duration))
+        max_shock_duration = ttk.Label(content, text="Maximum shock duration (ms)")
+        self.max_shock_duration_entry = ttk.Entry(content)
+        self.max_shock_duration_entry.insert(0, str(self.settings.max_shock_duration))
 
         set_lower_level = ttk.Label(frame, text="Set Lower Level")
         self.lower_threshold_var = tk.StringVar(value=f"{str(self.lower_threshold)} mA")
@@ -61,10 +69,16 @@ class SubjectThreshold(tk.Toplevel):
         )
 
         content.grid(column=0, row=0, sticky="NEWS")
-        frame.grid(column=0, row=0, columnspan=3, rowspan=3, sticky="NEWS")
-        subject_id_label.grid(column=3, row=0, columnspan=2, sticky="NW", padx=5)
-        self.subject_id_entry.grid(
-            column=3, row=1, columnspan=2, sticky="NEW", pady=5, padx=5
+        frame.grid(column=0, row=6, sticky="NEWS")
+        subject_id_label.grid(column=0, row=0, columnspan=2, sticky="NW", padx=5)
+        self.subject_id_entry.grid(column=0, row=1, columnspan=2, sticky="NEW", padx=5)
+        min_shock_duration.grid(column=0, row=2, columnspan=2, sticky="NW", padx=5)
+        self.min_shock_duration_entry.grid(
+            column=0, row=3, columnspan=2, sticky="NEW", padx=5
+        )
+        max_shock_duration.grid(column=0, row=4, columnspan=2, sticky="NW", padx=5)
+        self.max_shock_duration_entry.grid(
+            column=0, row=5, columnspan=2, sticky="NEW", padx=5
         )
 
         set_lower_level.grid(column=0, row=0, sticky="W")
@@ -77,19 +91,23 @@ class SubjectThreshold(tk.Toplevel):
         higher_threshold_label.grid(column=2, row=1, sticky="E")
         start_higher_level.grid(column=2, row=2, sticky="E")
 
-        ok.grid(column=3, row=2)
-        cancel.grid(column=4, row=2)
+        ok.grid(column=0, row=7, pady=5)
+        cancel.grid(column=1, row=7, pady=5)
 
         self.window.columnconfigure(0, weight=1)
         self.window.rowconfigure(0, weight=1)
-        self.window.minsize(500, 300)
+        self.window.minsize(400, 300)
 
         content.columnconfigure(0, weight=3)
         content.columnconfigure(1, weight=3)
         content.columnconfigure(2, weight=3)
-        content.columnconfigure(3, weight=1)
-        content.columnconfigure(4, weight=1)
+        content.rowconfigure(0, weight=1)
         content.rowconfigure(1, weight=1)
+        content.rowconfigure(2, weight=1)
+        content.rowconfigure(3, weight=1)
+        content.rowconfigure(4, weight=1)
+        content.rowconfigure(5, weight=1)
+        content.rowconfigure(6, weight=1)
 
     def start_low_shock(self):
         self.administer_shock(0.0, 1.250)
@@ -154,4 +172,15 @@ class SubjectThreshold(tk.Toplevel):
         self.settings.higher_threshold = self.higher_threshold
         self.settings.subject_id = self.subject_id_entry.get()
 
-        self.window.destroy()
+        try:
+            mn = int(self.min_shock_duration_entry.get())
+            mx = int(self.max_shock_duration_entry.get())
+            if mn > mx or mn < 0 or mx > 10000:
+                messagebox.showinfo("Notification", "Check your values again.")
+            else:
+                self.settings.min_shock_duration = mn
+                self.settings.max_shock_duration = mx
+
+                self.window.destroy()
+        except ValueError:
+            messagebox.showinfo("Notification", "Check your values again.")
