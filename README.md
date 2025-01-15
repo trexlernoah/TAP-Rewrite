@@ -32,9 +32,9 @@ The .exe is located in `/dist/tap/tap.exe`. If you move the .exe, you must move 
 To build the .exe from source, run the following in the root directory:
 
 ```bash
-python -m pip install tap
+python -m pip install ./src
 python -m pip install -U pyinstaller
-python -m PyInstaller --recursive-copy-metadata nidaqmx ./tap/main.pyw
+python -m PyInstaller --recursive-copy-metadata nidaqmx ./src/tap/main.pyw
 ```
 
 Find the tap.exe in the dist/ folder.
