@@ -51,6 +51,7 @@ class DAQ(threading.Thread):
                 pass
             else:
                 if self.thread_handler.task_queue.single_lock:
+                    self.logger.log("Queue is locked")
                     self.thread_handler.task_queue.clear()
 
                 self.logger.log("TASK RECEIVED =========== QUEUE READ")
@@ -121,6 +122,7 @@ class DAQ(threading.Thread):
             else:
                 # This may be unnecessary
                 if self.thread_handler.task_queue.single_lock:
+                    self.logger.log("Queue is locked")
                     self.thread_handler.task_queue.clear()
 
                 self.logger.log("TASK RECEIVED =========== QUEUE READ")

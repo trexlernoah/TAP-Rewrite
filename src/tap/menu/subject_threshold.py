@@ -165,11 +165,7 @@ class SubjectThreshold(tk.Toplevel):
 
         self.thread_handler.task_queue.unlock()
         for s in shock_vals:
-            put = self.thread_handler.task_queue.put_task(ShockTask(s, 1, 3.5))
-            if not put:
-                self.logger.log(
-                    "Failed to put ShockTask in task_queue. Queue locked/full."
-                )
+            self.thread_handler.task_queue.put_task(ShockTask(s, 1, 3.5))
         update()
 
     def write_data(self):
