@@ -89,40 +89,39 @@ class DAQ(threading.Thread):
             and not self.thread_handler.kill_event.is_set()
         ):
             try:
-                shock_task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
+                shock_task: ShockTask = self.thread_handler.task_queue.get()
             except queue.Empty:
-                pass
-            else:
-                if self.thread_handler.task_queue.single_lock:
-                    self.logger.log("Queue is locked")
-                    self.thread_handler.task_queue.clear()
+                continue
+            if self.thread_handler.task_queue.single_lock:
+                self.logger.log("Queue is locked")
+                self.thread_handler.task_queue.clear()
 
-                self.logger.log("TASK RECEIVED =========== QUEUE READ")
-                self.logger.log(f"Current task: {str(shock_task)}")
-                self.logger.log_queue(self.thread_handler.task_queue)
-                volts = self.current_to_volts(shock_task.shock)
-                self.logger.log(f"Writing AO {volts}")
-                self.logger.log("Writing DO ON")
-                try:
-                    self.logger.log(f"Waiting {shock_task.duration}")
-                    start = time.time()
-                    self.thread_handler.halt_event.wait(shock_task.duration)
-                    self.logger.log(f"Shocked for {time.time() - start}s")
+            self.logger.log("TASK RECEIVED =========== QUEUE READ")
+            self.logger.log(f"Current task: {str(shock_task)}")
+            self.logger.log_queue(self.thread_handler.task_queue)
+            volts = self.current_to_volts(shock_task.shock)
+            self.logger.log(f"Writing AO {volts}")
+            self.logger.log("Writing DO ON")
+            try:
+                self.logger.log(f"Waiting {shock_task.duration}")
+                start = time.time()
+                self.thread_handler.halt_event.wait(shock_task.duration)
+                self.logger.log(f"Shocked for {time.time() - start}s")
 
-                    self.logger.log("Writing DO OFF")
-                    self.logger.log("Writing AO 0.0")
+                self.logger.log("Writing DO OFF")
+                self.logger.log("Writing AO 0.0")
 
-                    self.logger.log(f"Waiting {shock_task.cooldown}")
-                    start = time.time()
-                    self.thread_handler.halt_event.wait(shock_task.cooldown)
-                    self.logger.log(f"Cooled down for {time.time() - start}s")
-                except Exception as e:
-                    self.logger.log("EXCEPTION %s" % e)
-                    self.logger.log("Setting halt event")
-                    self.thread_handler.halt_event.set()
+                self.logger.log(f"Waiting {shock_task.cooldown}")
+                start = time.time()
+                self.thread_handler.halt_event.wait(shock_task.cooldown)
+                self.logger.log(f"Cooled down for {time.time() - start}s")
+            except Exception as e:
+                self.logger.log("EXCEPTION %s" % e)
+                self.logger.log("Setting halt event")
+                self.thread_handler.halt_event.set()
 
-                self.logger.log("Setting task done")
-                self.thread_handler.task_queue.task_done()
+            self.logger.log("Setting task done")
+            self.thread_handler.task_queue.task_done()
         self.logger.log("Writing DO OFF")
         self.logger.log("Writing AO 0.0")
         self.logger.log("Clearing queue and halt event status")
@@ -136,12 +135,20 @@ class DAQ(threading.Thread):
             and not self.thread_handler.kill_event.is_set()
         ):
             try:
-                # See if there is an event listener
-                # Getting rid of timeout and setting block=False results in too much processing in this while loop
-                shock_task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
+                # Use blocking mode to wait for a task
+                shock_task: ShockTask = self.thread_handler.task_queue.get()
             except queue.Empty:
+                # This block will rarely run unless the queue is improperly configured
                 continue
 
+            # Check halt_event and kill_event before proceeding
+            if self.thread_handler.kill_event.is_set():
+                self.logger.log("Kill event is set. Exiting watch_queue loop.")
+                break
+            if self.thread_handler.halt_event.is_set():
+                self.logger.log("Halt event is set. Skipping current task.")
+                self.thread_handler.task_queue.task_done()
+                continue
             # This may be unnecessary
             if self.thread_handler.task_queue.single_lock:
                 self.logger.log("Queue is locked")
