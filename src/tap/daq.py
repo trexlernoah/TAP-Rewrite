@@ -1,10 +1,9 @@
 import time
 import threading
-import nidaqmx
 import queue
-import sys
-
 import line_profiler
+import nidaqmx
+from nidaqmx.stream_writers import AnalogSingleChannelWriter, DigitalSingleChannelWriter
 
 from tap.classes import ThreadHandler, ShockTask, Logger
 
@@ -25,7 +24,46 @@ class DAQ(threading.Thread):
         self.pin = pin
         self.analog_ouput_name = device_name + "/" + pin
 
+        # Configure reusable tasks and stream writers
+        self.ao_task, self.ao_writer = self._configure_ao_task()
+        self.do_task, self.do_writer = self._configure_do_task()
+
         self.start()
+
+    def _configure_ao_task(self):
+        """Configure and return an analog output task with a stream writer."""
+        task = nidaqmx.Task()
+        task.ao_channels.add_ao_voltage_chan(
+            self.analog_output_name, min_val=0.0, max_val=2.5
+        )
+        writer = AnalogSingleChannelWriter(task.out_stream)
+        return task, writer
+
+    def _configure_do_task(self):
+        """Configure and return a digital output task with a stream writer."""
+        task = nidaqmx.Task()
+        task.do_channels.add_do_chan(f"{self.device_name}/port0/line0:0")
+        writer = DigitalSingleChannelWriter(task.out_stream)
+        return task, writer
+
+    def cleanup_tasks(self):
+        """Clean up reusable tasks."""
+        self.ao_task.close()
+        self.do_task.close()
+
+    def write_zeroes(self):
+        """Reset both analog and digital outputs to zero or off."""
+        self.logger.log("Writing zeroes to DAQ")
+        try:
+            # Write zeros to analog output using the stream writer
+            self.logger.log("Writing AO 0.0")
+            self.ao_writer.write_one_sample(0.0)
+
+            # Write False to digital output using the stream writer
+            self.logger.log("Writing DO OFF")
+            self.do_writer.write_one_sample(False)
+        except Exception as e:
+            self.logger.log(f"Error in write_zeroes: {e}")
 
     def current_to_volts(self, mA: float) -> float:
         self.logger.log(f"Called DAQ.current_to_volts(mA={mA})")
@@ -38,8 +76,12 @@ class DAQ(threading.Thread):
         return volts
 
     def run(self):
-        while not self.thread_handler.kill_event.is_set():
-            self.watch_queue()
+        """Main thread loop for processing tasks."""
+        try:
+            while not self.thread_handler.kill_event.is_set():
+                self.watch_queue()
+        finally:
+            self.cleanup_tasks()
 
     def test_watch_queue(self):
         while (
@@ -87,38 +129,6 @@ class DAQ(threading.Thread):
         self.thread_handler.task_queue.clear()
         self.thread_handler.halt_event.clear()
 
-    def write_zeroes(self, depth=0):
-        if depth > 25:
-            sys.exit(1)  # Switch this exit
-        self.logger.log("Writing zeroes to DAQ")
-        try:
-            self.logger.log("Writing DO OFF")
-            try:
-                task = nidaqmx.Task()
-                task.do_channels.add_do_chan("Dev1/port0/line0:0")
-                task.start()
-                task.write(False, timeout=0)
-                task.stop()
-            except Exception as e:
-                self.logger.log("NIDAQMX DO EXCEPTION %s" % e)
-                self.write_zeroes(depth + 1)
-
-            self.logger.log("Writing AO 0.0")
-            try:
-                task = nidaqmx.Task()
-                task.ao_channels.add_ao_voltage_chan(
-                    "Dev1/ao0", min_val=0.0, max_val=2.5
-                )
-                task.start()
-                task.write(0.0, timeout=0)
-                task.stop()
-            except Exception as e:
-                self.logger.log("NIDAQMX AO EXCEPTION %s" % e)
-                self.write_zeroes(depth + 1)
-
-        except Exception as e:
-            self.logger.log("EXCEPTION %s" % e)
-
     @line_profiler.profile
     def watch_queue(self):
         while (
@@ -130,61 +140,49 @@ class DAQ(threading.Thread):
                 # Getting rid of timeout and setting block=False results in too much processing in this while loop
                 shock_task: ShockTask = self.thread_handler.task_queue.get(timeout=0.1)
             except queue.Empty:
-                pass
-            else:
-                # This may be unnecessary
-                if self.thread_handler.task_queue.single_lock:
-                    self.logger.log("Queue is locked")
-                    self.thread_handler.task_queue.clear()
+                continue
 
-                self.logger.log("TASK RECEIVED =========== QUEUE READ")
-                self.logger.log(f"Current task: {str(shock_task)}")
-                self.logger.log_queue(self.thread_handler.task_queue)
-                volts = self.current_to_volts(shock_task.shock)
+            # This may be unnecessary
+            if self.thread_handler.task_queue.single_lock:
+                self.logger.log("Queue is locked")
+                self.thread_handler.task_queue.clear()
 
-                try:
-                    self.logger.log(f"Writing AO {volts}")
-                    try:
-                        task = nidaqmx.Task()
-                        task.ao_channels.add_ao_voltage_chan(
-                            "Dev1/ao0", min_val=0.0, max_val=2.5
-                        )
-                        task.start()
-                        task.write(volts, timeout=0)
-                        task.stop()
-                    except Exception as e:
-                        self.logger.log("NIDAQMX DO EXCEPTION %s" % e)
-                        self.write_zeroes()
+            self.logger.log("TASK RECEIVED =========== QUEUE READ")
+            self.logger.log(f"Current task: {str(shock_task)}")
+            self.logger.log_queue(self.thread_handler.task_queue)
+            volts = self.current_to_volts(shock_task.shock)
 
-                    self.logger.log("Writing DO ON")
-                    try:
-                        task = nidaqmx.Task()
-                        task.do_channels.add_do_chan("Dev1/port0/line0:0")
-                        task.start()
-                        task.write(True, timeout=0)
-                        task.stop()
-                    except Exception as e:
-                        self.logger.log("NIDAQMX AO EXCEPTION %s" % e)
-                        self.write_zeroes()
+            try:
+                # Write analog output voltage
+                self.logger.log(f"Writing AO {volts}")
+                self.ao_writer.write_one_sample(volts, timeout=0)
 
-                    self.logger.log(f"Waiting {shock_task.duration}")
-                    start = time.time()
-                    self.thread_handler.halt_event.wait(shock_task.duration)
-                    self.logger.log(f"Shocked for {time.time() - start}s")
+                # Write digital output ON
+                self.logger.log("Writing DO ON")
+                self.do_writer.write(True, timeout=0)
 
-                    self.write_zeroes()
+                # Wait for the duration of the shock
+                self.logger.log(f"Waiting {shock_task.duration}")
+                start = time.time()
+                self.thread_handler.halt_event.wait(shock_task.duration)
+                self.logger.log(f"Shocked for {time.time() - start}s")
 
-                    self.logger.log(f"Waiting {shock_task.cooldown}")
-                    start = time.time()
-                    self.thread_handler.halt_event.wait(shock_task.cooldown)
-                    self.logger.log(f"Cooled down for {time.time() - start}s")
-                except Exception as e:
-                    self.logger.log("EXCEPTION %s" % e)
-                    self.logger.log("Setting halt event")
-                    self.thread_handler.halt_event.set()
+                # Reset outputs
+                self.write_zeroes()
 
-                self.logger.log("Setting task done")
-                self.thread_handler.task_queue.task_done()
+                # Cooldown period
+                self.logger.log(f"Waiting {shock_task.cooldown}")
+                start = time.time()
+                self.thread_handler.halt_event.wait(shock_task.cooldown)
+                self.logger.log(f"Cooled down for {time.time() - start}s")
+
+            except Exception as e:
+                self.logger.log("EXCEPTION %s" % e)
+                self.logger.log("Setting halt event")
+                self.thread_handler.halt_event.set()
+
+            self.logger.log("Setting task done")
+            self.thread_handler.task_queue.task_done()
         # Clean up here
         self.write_zeroes()
         self.logger.log("Clearing queue and halt event status")
