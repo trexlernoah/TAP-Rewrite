@@ -22,7 +22,7 @@ class DAQ(threading.Thread):
 
         self.device_name = device_name
         self.pin = pin
-        self.analog_ouput_name = device_name + "/" + pin
+        self.analog_output_name = device_name + "/" + pin
 
         # Configure reusable tasks and stream writers
         self.ao_task, self.ao_writer = self._configure_ao_task()
