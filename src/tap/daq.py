@@ -61,7 +61,7 @@ class DAQ(threading.Thread):
 
             # Write False to digital output using the stream writer
             self.logger.log("Writing DO OFF")
-            self.do_writer.write_one_sample(False)
+            self.do_writer.write_one_sample_one_line(False)
         except Exception as e:
             self.logger.log(f"Error in write_zeroes: {e}")
 
@@ -166,7 +166,7 @@ class DAQ(threading.Thread):
 
                 # Write digital output ON
                 self.logger.log("Writing DO ON")
-                self.do_writer.write_one_sample(True, timeout=0)
+                self.do_writer.write_one_sample_one_line(True, timeout=0)
 
                 # Wait for the duration of the shock
                 self.logger.log(f"Waiting {shock_task.duration}")
