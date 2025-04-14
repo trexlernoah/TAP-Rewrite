@@ -136,7 +136,7 @@ class DAQ(threading.Thread):
         ):
             try:
                 # Use blocking mode to wait for a task
-                shock_task: ShockTask = self.thread_handler.task_queue.get()
+                shock_task: ShockTask = self.thread_handler.task_queue.get(timeout=1.0)
             except queue.Empty:
                 # This block will rarely run unless the queue is improperly configured
                 continue

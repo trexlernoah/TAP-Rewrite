@@ -26,7 +26,7 @@ def main():
 def exit():
     logger.log("Setting kill event")
     thread_handler.kill_event.set()
-    thread_handler.task_queue.put(None)
+    # thread_handler.task_queue.put(None)
 
 
 if __name__ == "__main__":
