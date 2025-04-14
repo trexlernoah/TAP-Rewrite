@@ -46,10 +46,10 @@ class DAQ(threading.Thread):
         writer = DigitalSingleChannelWriter(task.out_stream)
         return task, writer
 
-    def cleanup_tasks(self):
-        """Clean up reusable tasks."""
-        self.ao_task.close()
-        self.do_task.close()
+    # def cleanup_tasks(self):
+    #     """Clean up reusable tasks."""
+    #     self.ao_task.close()
+    #     self.do_task.close()
 
     def write_zeroes(self):
         """Reset both analog and digital outputs to zero or off."""
@@ -77,11 +77,11 @@ class DAQ(threading.Thread):
 
     def run(self):
         """Main thread loop for processing tasks."""
-        try:
-            while not self.thread_handler.kill_event.is_set():
-                self.watch_queue()
-        finally:
-            self.cleanup_tasks()
+        # try:
+        while not self.thread_handler.kill_event.is_set():
+            self.watch_queue()
+        # finally:
+        #     self.cleanup_tasks()
 
     def test_watch_queue(self):
         while (
