@@ -125,32 +125,51 @@ class SubjectThreshold(tk.Toplevel):
     def _administer_shock(self, min: float, max: float, lower: bool):
         self.logger.log(f"administer_shock({min}, {max}, {lower})")
 
+        def put_task():
+            nonlocal shock_vals
+            current_val = shock_vals.pop(0)
+            self.thread_handler.task_queue.put_task(ShockTask(current_val, 1, 3.5))
+            self.logger.log(f"{shock_vals}")
+
+            return current_val
+
         def update():
+            nonlocal shock_vals
             self.logger.log(
                 f"administer_shock.update() -- thread_handler.task_queue.unfinished_tasks == {self.thread_handler.task_queue.unfinished_tasks}"
             )
-            if self.thread_handler.task_queue.unfinished_tasks <= 0:
-                return
-            if self.thread_handler.task_queue.unfinished_tasks > len(shock_vals):
+            # unfinished = len(shock_vals)
+            # if self.thread_handler.task_queue.unfinished_tasks <= 0:
+            #     return
+            # if self.thread_handler.task_queue.unfinished_tasks > len(shock_vals):
+            #     return
+
+            # idx = len(shock_vals) - self.thread_handler.task_queue.unfinished_tasks
+            # current_shock = shock_vals[idx]
+            if len(shock_vals) <= 0:
                 return
 
-            idx = len(shock_vals) - self.thread_handler.task_queue.unfinished_tasks
-            current_shock = shock_vals[idx]
-            current_shock_text.set(f"Current level: {str(current_shock)} mA")
+            if self.thread_handler.task_done.is_set():
+                self.logger.log("task done set")
+                self.thread_handler.task_done.clear()
+                current_shock = put_task()
+                current_shock_text.set(f"Current level: {str(current_shock)} mA")
 
-            if lower:
-                self.lower_threshold = current_shock
-                self.lower_threshold_var.set(f"{str(self.lower_threshold)}mA")
-            else:
-                self.higher_threshold = current_shock
-                self.higher_threshold_var.set(f"{str(self.higher_threshold)} mA")
+                if lower:
+                    self.lower_threshold = current_shock
+                    self.lower_threshold_var.set(f"{str(self.lower_threshold)}mA")
+                else:
+                    self.higher_threshold = current_shock
+                    self.higher_threshold_var.set(f"{str(self.higher_threshold)} mA")
 
             self.window.after(500, update)
 
         def stop():
+            nonlocal shock_vals
             self.logger.log("administer_shock.stop()")
-            self.thread_handler.task_queue.lock()
             self.thread_handler.halt_event.set()
+            self.thread_handler.task_done.clear()
+            shock_vals.clear()
             subwindow.destroy()
 
         if min < 0.0:
@@ -175,10 +194,13 @@ class SubjectThreshold(tk.Toplevel):
         stop_btn.pack()
 
         shock_vals = [x / 1000 for x in range(int(min * 1000), int(max * 1000), 75)]
+        print(shock_vals)
 
-        self.thread_handler.task_queue.unlock()
-        for s in shock_vals:
-            self.thread_handler.task_queue.put_task(ShockTask(s, 1, 3.5))
+        # self.thread_handler.task_queue.unlock()
+        # for s in shock_vals:
+        #     self.thread_handler.task_queue.put_task(ShockTask(s, 1, 3.5))
+        if not self.thread_handler.task_done.is_set():
+            self.thread_handler.task_done.set()
         update()
 
     def write_data(self):
